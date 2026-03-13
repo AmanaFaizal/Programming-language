@@ -1,0 +1,35 @@
+program test:
+
+var N, M, I, J, product, temp;
+
+begin
+   read(N);
+   read(M);
+
+   product := 1;
+
+   if N <= M then
+      I := N
+   else
+      I := M;
+
+   if N <= M then
+      J := M
+   else
+      J := N;
+
+   while I <= J do
+      begin
+         temp := 0;
+         M := 1;
+         while M <= I do
+            begin
+               temp := temp + product;
+               M := M + 1
+            end;
+         product := temp;
+         I := I + 1
+      end;
+
+   output(product);
+end test.

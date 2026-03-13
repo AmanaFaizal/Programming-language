@@ -1,0 +1,1377 @@
+State 78 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: Tiny $end
+
+    1 Tiny: PROGRAM Name ':' Dclns Body Name '.'
+
+    2 Dclns: VAR DclnList
+    3      | ε
+
+    4 DclnList: Dcln ';'
+    5         | DclnList Dcln ';'
+
+    6 Dcln: NameList ':' Type
+
+    7 NameList: Name
+    8         | NameList ',' Name
+
+    9 Type: INTEGER
+   10     | BOOLEAN
+
+   11 Body: BEGINX StatementList END
+
+   12 StatementList: Statement
+   13              | StatementList ';' Statement
+
+   14 Statement: Name ASSIGNMENT Expression
+   15          | OUTPUT '(' ExprList ')'
+   16          | IF Expression THEN Statement
+   17          | IF Expression THEN Statement ELSE Statement
+   18          | WHILE Expression DO Statement
+   19          | Body
+   20          | ε
+
+   21 ExprList: Expression
+   22         | ExprList ',' Expression
+
+   23 Expression: SimpleExpr
+   24           | SimpleExpr LTE SimpleExpr
+   25           | SimpleExpr NEQ SimpleExpr
+   26           | SimpleExpr GTE SimpleExpr
+   27           | SimpleExpr '<' SimpleExpr
+   28           | SimpleExpr '>' SimpleExpr
+   29           | SimpleExpr '=' SimpleExpr
+   30           | SimpleExpr AND SimpleExpr
+   31           | SimpleExpr OR SimpleExpr
+
+   32 SimpleExpr: SimpleExpr '+' Term
+   33           | SimpleExpr '-' Term
+   34           | Term
+
+   35 Term: Term '*' Factor
+   36     | Term '/' Factor
+   37     | Term MOD Factor
+   38     | Factor
+
+   39 Factor: Primary POWER Factor
+   40       | Primary
+
+   41 Primary: '-' Primary
+   42        | '+' Primary
+   43        | NOT Primary
+   44        | READ
+   45        | EOFX
+   46        | TRUE
+   47        | FALSE
+   48        | Name
+   49        | INTEGER_NUM
+   50        | '(' Expression ')'
+
+   51 Name: IDENTIFIER
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    '(' (40) 15 50
+    ')' (41) 15 50
+    '*' (42) 35
+    '+' (43) 32 42
+    ',' (44) 8 22
+    '-' (45) 33 41
+    '.' (46) 1
+    '/' (47) 36
+    ':' (58) 1 6
+    ';' (59) 4 5 13
+    '<' (60) 27
+    '=' (61) 29
+    '>' (62) 28
+    error (256)
+    NEQ <info> (258) 25
+    END <info> (259) 11
+    FALSE <info> (260) 47
+    VAR <info> (261) 2
+    IDENTIFIER <info> (262) 51
+    IF <info> (263) 16 17
+    READ <info> (264) 44
+    ELSE <info> (265) 17
+    THEN <info> (266) 16 17
+    MOD <info> (267) 37
+    WHILE <info> (268) 18
+    OUTPUT <info> (269) 15
+    GTE <info> (270) 26
+    NOT <info> (271) 43
+    DO <info> (272) 18
+    BEGINX <info> (273) 11
+    BOOLEAN <info> (274) 10
+    INTEGER_NUM <info> (275) 49
+    TRUE <info> (276) 46
+    AND <info> (277) 30
+    INTEGER <info> (278) 9
+    EOFX <info> (279) 45
+    POWER <info> (280) 39
+    LTE <info> (281) 24
+    OR <info> (282) 31
+    ASSIGNMENT <info> (283) 14
+    PROGRAM <info> (284) 1
+
+
+Nonterminals, with rules where they appear
+
+    $accept (43)
+        on left: 0
+    Tiny <dlist> (44)
+        on left: 1
+        on right: 0
+    Dclns <dlist> (45)
+        on left: 2 3
+        on right: 1
+    DclnList <dlist> (46)
+        on left: 4 5
+        on right: 2 5
+    Dcln <dlist> (47)
+        on left: 6
+        on right: 4 5
+    NameList <dlist> (48)
+        on left: 7 8
+        on right: 6 8
+    Type <dlist> (49)
+        on left: 9 10
+        on right: 6
+    Body <dlist> (50)
+        on left: 11
+        on right: 1 19
+    StatementList <dlist> (51)
+        on left: 12 13
+        on right: 11 13
+    Statement <dlist> (52)
+        on left: 14 15 16 17 18 19 20
+        on right: 12 13 16 17 18
+    ExprList <dlist> (53)
+        on left: 21 22
+        on right: 15 22
+    Expression <dlist> (54)
+        on left: 23 24 25 26 27 28 29 30 31
+        on right: 14 16 17 18 21 22 50
+    SimpleExpr <dlist> (55)
+        on left: 32 33 34
+        on right: 23 24 25 26 27 28 29 30 31 32 33
+    Term <dlist> (56)
+        on left: 35 36 37 38
+        on right: 32 33 34 35 36 37
+    Factor <dlist> (57)
+        on left: 39 40
+        on right: 35 36 37 38 39
+    Primary <dlist> (58)
+        on left: 41 42 43 44 45 46 47 48 49 50
+        on right: 39 40 41 42 43
+    Name <dlist> (59)
+        on left: 51
+        on right: 1 7 8 14 48
+
+
+State 0
+
+    0 $accept: • Tiny $end
+
+    PROGRAM  shift, and go to state 1
+
+    Tiny  go to state 2
+
+
+State 1
+
+    1 Tiny: PROGRAM • Name ':' Dclns Body Name '.'
+
+    IDENTIFIER  shift, and go to state 3
+
+    Name  go to state 4
+
+
+State 2
+
+    0 $accept: Tiny • $end
+
+    $end  shift, and go to state 5
+
+
+State 3
+
+   51 Name: IDENTIFIER •
+
+    $default  reduce using rule 51 (Name)
+
+
+State 4
+
+    1 Tiny: PROGRAM Name • ':' Dclns Body Name '.'
+
+    ':'  shift, and go to state 6
+
+
+State 5
+
+    0 $accept: Tiny $end •
+
+    $default  accept
+
+
+State 6
+
+    1 Tiny: PROGRAM Name ':' • Dclns Body Name '.'
+
+    VAR  shift, and go to state 7
+
+    $default  reduce using rule 3 (Dclns)
+
+    Dclns  go to state 8
+
+
+State 7
+
+    2 Dclns: VAR • DclnList
+
+    IDENTIFIER  shift, and go to state 3
+
+    DclnList  go to state 9
+    Dcln      go to state 10
+    NameList  go to state 11
+    Name      go to state 12
+
+
+State 8
+
+    1 Tiny: PROGRAM Name ':' Dclns • Body Name '.'
+
+    BEGINX  shift, and go to state 13
+
+    Body  go to state 14
+
+
+State 9
+
+    2 Dclns: VAR DclnList •
+    5 DclnList: DclnList • Dcln ';'
+
+    IDENTIFIER  shift, and go to state 3
+
+    $default  reduce using rule 2 (Dclns)
+
+    Dcln      go to state 15
+    NameList  go to state 11
+    Name      go to state 12
+
+
+State 10
+
+    4 DclnList: Dcln • ';'
+
+    ';'  shift, and go to state 16
+
+
+State 11
+
+    6 Dcln: NameList • ':' Type
+    8 NameList: NameList • ',' Name
+
+    ':'  shift, and go to state 17
+    ','  shift, and go to state 18
+
+
+State 12
+
+    7 NameList: Name •
+
+    $default  reduce using rule 7 (NameList)
+
+
+State 13
+
+   11 Body: BEGINX • StatementList END
+
+    IDENTIFIER  shift, and go to state 3
+    IF          shift, and go to state 19
+    WHILE       shift, and go to state 20
+    OUTPUT      shift, and go to state 21
+    BEGINX      shift, and go to state 13
+
+    $default  reduce using rule 20 (Statement)
+
+    Body           go to state 22
+    StatementList  go to state 23
+    Statement      go to state 24
+    Name           go to state 25
+
+
+State 14
+
+    1 Tiny: PROGRAM Name ':' Dclns Body • Name '.'
+
+    IDENTIFIER  shift, and go to state 3
+
+    Name  go to state 26
+
+
+State 15
+
+    5 DclnList: DclnList Dcln • ';'
+
+    ';'  shift, and go to state 27
+
+
+State 16
+
+    4 DclnList: Dcln ';' •
+
+    $default  reduce using rule 4 (DclnList)
+
+
+State 17
+
+    6 Dcln: NameList ':' • Type
+
+    BOOLEAN  shift, and go to state 28
+    INTEGER  shift, and go to state 29
+
+    Type  go to state 30
+
+
+State 18
+
+    8 NameList: NameList ',' • Name
+
+    IDENTIFIER  shift, and go to state 3
+
+    Name  go to state 31
+
+
+State 19
+
+   16 Statement: IF • Expression THEN Statement
+   17          | IF • Expression THEN Statement ELSE Statement
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Expression  go to state 41
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 20
+
+   18 Statement: WHILE • Expression DO Statement
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Expression  go to state 47
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 21
+
+   15 Statement: OUTPUT • '(' ExprList ')'
+
+    '('  shift, and go to state 48
+
+
+State 22
+
+   19 Statement: Body •
+
+    $default  reduce using rule 19 (Statement)
+
+
+State 23
+
+   11 Body: BEGINX StatementList • END
+   13 StatementList: StatementList • ';' Statement
+
+    END  shift, and go to state 49
+    ';'  shift, and go to state 50
+
+
+State 24
+
+   12 StatementList: Statement •
+
+    $default  reduce using rule 12 (StatementList)
+
+
+State 25
+
+   14 Statement: Name • ASSIGNMENT Expression
+
+    ASSIGNMENT  shift, and go to state 51
+
+
+State 26
+
+    1 Tiny: PROGRAM Name ':' Dclns Body Name • '.'
+
+    '.'  shift, and go to state 52
+
+
+State 27
+
+    5 DclnList: DclnList Dcln ';' •
+
+    $default  reduce using rule 5 (DclnList)
+
+
+State 28
+
+   10 Type: BOOLEAN •
+
+    $default  reduce using rule 10 (Type)
+
+
+State 29
+
+    9 Type: INTEGER •
+
+    $default  reduce using rule 9 (Type)
+
+
+State 30
+
+    6 Dcln: NameList ':' Type •
+
+    $default  reduce using rule 6 (Dcln)
+
+
+State 31
+
+    8 NameList: NameList ',' Name •
+
+    $default  reduce using rule 8 (NameList)
+
+
+State 32
+
+   47 Primary: FALSE •
+
+    $default  reduce using rule 47 (Primary)
+
+
+State 33
+
+   44 Primary: READ •
+
+    $default  reduce using rule 44 (Primary)
+
+
+State 34
+
+   43 Primary: NOT • Primary
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Primary  go to state 53
+    Name     go to state 46
+
+
+State 35
+
+   49 Primary: INTEGER_NUM •
+
+    $default  reduce using rule 49 (Primary)
+
+
+State 36
+
+   46 Primary: TRUE •
+
+    $default  reduce using rule 46 (Primary)
+
+
+State 37
+
+   45 Primary: EOFX •
+
+    $default  reduce using rule 45 (Primary)
+
+
+State 38
+
+   50 Primary: '(' • Expression ')'
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Expression  go to state 54
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 39
+
+   42 Primary: '+' • Primary
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Primary  go to state 55
+    Name     go to state 46
+
+
+State 40
+
+   41 Primary: '-' • Primary
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Primary  go to state 56
+    Name     go to state 46
+
+
+State 41
+
+   16 Statement: IF Expression • THEN Statement
+   17          | IF Expression • THEN Statement ELSE Statement
+
+    THEN  shift, and go to state 57
+
+
+State 42
+
+   23 Expression: SimpleExpr •
+   24           | SimpleExpr • LTE SimpleExpr
+   25           | SimpleExpr • NEQ SimpleExpr
+   26           | SimpleExpr • GTE SimpleExpr
+   27           | SimpleExpr • '<' SimpleExpr
+   28           | SimpleExpr • '>' SimpleExpr
+   29           | SimpleExpr • '=' SimpleExpr
+   30           | SimpleExpr • AND SimpleExpr
+   31           | SimpleExpr • OR SimpleExpr
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    NEQ  shift, and go to state 58
+    GTE  shift, and go to state 59
+    AND  shift, and go to state 60
+    LTE  shift, and go to state 61
+    OR   shift, and go to state 62
+    '<'  shift, and go to state 63
+    '>'  shift, and go to state 64
+    '='  shift, and go to state 65
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 23 (Expression)
+
+
+State 43
+
+   34 SimpleExpr: Term •
+   35 Term: Term • '*' Factor
+   36     | Term • '/' Factor
+   37     | Term • MOD Factor
+
+    MOD  shift, and go to state 68
+    '*'  shift, and go to state 69
+    '/'  shift, and go to state 70
+
+    $default  reduce using rule 34 (SimpleExpr)
+
+
+State 44
+
+   38 Term: Factor •
+
+    $default  reduce using rule 38 (Term)
+
+
+State 45
+
+   39 Factor: Primary • POWER Factor
+   40       | Primary •
+
+    POWER  shift, and go to state 71
+
+    $default  reduce using rule 40 (Factor)
+
+
+State 46
+
+   48 Primary: Name •
+
+    $default  reduce using rule 48 (Primary)
+
+
+State 47
+
+   18 Statement: WHILE Expression • DO Statement
+
+    DO  shift, and go to state 72
+
+
+State 48
+
+   15 Statement: OUTPUT '(' • ExprList ')'
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    ExprList    go to state 73
+    Expression  go to state 74
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 49
+
+   11 Body: BEGINX StatementList END •
+
+    $default  reduce using rule 11 (Body)
+
+
+State 50
+
+   13 StatementList: StatementList ';' • Statement
+
+    IDENTIFIER  shift, and go to state 3
+    IF          shift, and go to state 19
+    WHILE       shift, and go to state 20
+    OUTPUT      shift, and go to state 21
+    BEGINX      shift, and go to state 13
+
+    $default  reduce using rule 20 (Statement)
+
+    Body       go to state 22
+    Statement  go to state 75
+    Name       go to state 25
+
+
+State 51
+
+   14 Statement: Name ASSIGNMENT • Expression
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Expression  go to state 76
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 52
+
+    1 Tiny: PROGRAM Name ':' Dclns Body Name '.' •
+
+    $default  reduce using rule 1 (Tiny)
+
+
+State 53
+
+   43 Primary: NOT Primary •
+
+    $default  reduce using rule 43 (Primary)
+
+
+State 54
+
+   50 Primary: '(' Expression • ')'
+
+    ')'  shift, and go to state 77
+
+
+State 55
+
+   42 Primary: '+' Primary •
+
+    $default  reduce using rule 42 (Primary)
+
+
+State 56
+
+   41 Primary: '-' Primary •
+
+    $default  reduce using rule 41 (Primary)
+
+
+State 57
+
+   16 Statement: IF Expression THEN • Statement
+   17          | IF Expression THEN • Statement ELSE Statement
+
+    IDENTIFIER  shift, and go to state 3
+    IF          shift, and go to state 19
+    WHILE       shift, and go to state 20
+    OUTPUT      shift, and go to state 21
+    BEGINX      shift, and go to state 13
+
+    $default  reduce using rule 20 (Statement)
+
+    Body       go to state 22
+    Statement  go to state 78
+    Name       go to state 25
+
+
+State 58
+
+   25 Expression: SimpleExpr NEQ • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 79
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 59
+
+   26 Expression: SimpleExpr GTE • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 80
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 60
+
+   30 Expression: SimpleExpr AND • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 81
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 61
+
+   24 Expression: SimpleExpr LTE • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 82
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 62
+
+   31 Expression: SimpleExpr OR • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 83
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 63
+
+   27 Expression: SimpleExpr '<' • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 84
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 64
+
+   28 Expression: SimpleExpr '>' • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 85
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 65
+
+   29 Expression: SimpleExpr '=' • SimpleExpr
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    SimpleExpr  go to state 86
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 66
+
+   32 SimpleExpr: SimpleExpr '+' • Term
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Term     go to state 87
+    Factor   go to state 44
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 67
+
+   33 SimpleExpr: SimpleExpr '-' • Term
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Term     go to state 88
+    Factor   go to state 44
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 68
+
+   37 Term: Term MOD • Factor
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Factor   go to state 89
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 69
+
+   35 Term: Term '*' • Factor
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Factor   go to state 90
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 70
+
+   36 Term: Term '/' • Factor
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Factor   go to state 91
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 71
+
+   39 Factor: Primary POWER • Factor
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Factor   go to state 92
+    Primary  go to state 45
+    Name     go to state 46
+
+
+State 72
+
+   18 Statement: WHILE Expression DO • Statement
+
+    IDENTIFIER  shift, and go to state 3
+    IF          shift, and go to state 19
+    WHILE       shift, and go to state 20
+    OUTPUT      shift, and go to state 21
+    BEGINX      shift, and go to state 13
+
+    $default  reduce using rule 20 (Statement)
+
+    Body       go to state 22
+    Statement  go to state 93
+    Name       go to state 25
+
+
+State 73
+
+   15 Statement: OUTPUT '(' ExprList • ')'
+   22 ExprList: ExprList • ',' Expression
+
+    ','  shift, and go to state 94
+    ')'  shift, and go to state 95
+
+
+State 74
+
+   21 ExprList: Expression •
+
+    $default  reduce using rule 21 (ExprList)
+
+
+State 75
+
+   13 StatementList: StatementList ';' Statement •
+
+    $default  reduce using rule 13 (StatementList)
+
+
+State 76
+
+   14 Statement: Name ASSIGNMENT Expression •
+
+    $default  reduce using rule 14 (Statement)
+
+
+State 77
+
+   50 Primary: '(' Expression ')' •
+
+    $default  reduce using rule 50 (Primary)
+
+
+State 78
+
+   16 Statement: IF Expression THEN Statement •
+   17          | IF Expression THEN Statement • ELSE Statement
+
+    ELSE  shift, and go to state 96
+
+    ELSE      [reduce using rule 16 (Statement)]
+    $default  reduce using rule 16 (Statement)
+
+
+State 79
+
+   25 Expression: SimpleExpr NEQ SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 25 (Expression)
+
+
+State 80
+
+   26 Expression: SimpleExpr GTE SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 26 (Expression)
+
+
+State 81
+
+   30 Expression: SimpleExpr AND SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 30 (Expression)
+
+
+State 82
+
+   24 Expression: SimpleExpr LTE SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 24 (Expression)
+
+
+State 83
+
+   31 Expression: SimpleExpr OR SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 31 (Expression)
+
+
+State 84
+
+   27 Expression: SimpleExpr '<' SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 27 (Expression)
+
+
+State 85
+
+   28 Expression: SimpleExpr '>' SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 28 (Expression)
+
+
+State 86
+
+   29 Expression: SimpleExpr '=' SimpleExpr •
+   32 SimpleExpr: SimpleExpr • '+' Term
+   33           | SimpleExpr • '-' Term
+
+    '+'  shift, and go to state 66
+    '-'  shift, and go to state 67
+
+    $default  reduce using rule 29 (Expression)
+
+
+State 87
+
+   32 SimpleExpr: SimpleExpr '+' Term •
+   35 Term: Term • '*' Factor
+   36     | Term • '/' Factor
+   37     | Term • MOD Factor
+
+    MOD  shift, and go to state 68
+    '*'  shift, and go to state 69
+    '/'  shift, and go to state 70
+
+    $default  reduce using rule 32 (SimpleExpr)
+
+
+State 88
+
+   33 SimpleExpr: SimpleExpr '-' Term •
+   35 Term: Term • '*' Factor
+   36     | Term • '/' Factor
+   37     | Term • MOD Factor
+
+    MOD  shift, and go to state 68
+    '*'  shift, and go to state 69
+    '/'  shift, and go to state 70
+
+    $default  reduce using rule 33 (SimpleExpr)
+
+
+State 89
+
+   37 Term: Term MOD Factor •
+
+    $default  reduce using rule 37 (Term)
+
+
+State 90
+
+   35 Term: Term '*' Factor •
+
+    $default  reduce using rule 35 (Term)
+
+
+State 91
+
+   36 Term: Term '/' Factor •
+
+    $default  reduce using rule 36 (Term)
+
+
+State 92
+
+   39 Factor: Primary POWER Factor •
+
+    $default  reduce using rule 39 (Factor)
+
+
+State 93
+
+   18 Statement: WHILE Expression DO Statement •
+
+    $default  reduce using rule 18 (Statement)
+
+
+State 94
+
+   22 ExprList: ExprList ',' • Expression
+
+    FALSE        shift, and go to state 32
+    IDENTIFIER   shift, and go to state 3
+    READ         shift, and go to state 33
+    NOT          shift, and go to state 34
+    INTEGER_NUM  shift, and go to state 35
+    TRUE         shift, and go to state 36
+    EOFX         shift, and go to state 37
+    '('          shift, and go to state 38
+    '+'          shift, and go to state 39
+    '-'          shift, and go to state 40
+
+    Expression  go to state 97
+    SimpleExpr  go to state 42
+    Term        go to state 43
+    Factor      go to state 44
+    Primary     go to state 45
+    Name        go to state 46
+
+
+State 95
+
+   15 Statement: OUTPUT '(' ExprList ')' •
+
+    $default  reduce using rule 15 (Statement)
+
+
+State 96
+
+   17 Statement: IF Expression THEN Statement ELSE • Statement
+
+    IDENTIFIER  shift, and go to state 3
+    IF          shift, and go to state 19
+    WHILE       shift, and go to state 20
+    OUTPUT      shift, and go to state 21
+    BEGINX      shift, and go to state 13
+
+    $default  reduce using rule 20 (Statement)
+
+    Body       go to state 22
+    Statement  go to state 98
+    Name       go to state 25
+
+
+State 97
+
+   22 ExprList: ExprList ',' Expression •
+
+    $default  reduce using rule 22 (ExprList)
+
+
+State 98
+
+   17 Statement: IF Expression THEN Statement ELSE Statement •
+
+    $default  reduce using rule 17 (Statement)

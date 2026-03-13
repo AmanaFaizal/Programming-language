@@ -1,0 +1,67 @@
+%%
+Tiny       -> PROGRAM Name ':' Dclns Body Name '.' => "program";
+
+Dclns      -> VAR DclnList => "dclns"
+           ->              => "dclns";
+
+DclnList   -> Dcln ';'
+           -> DclnList Dcln ';';
+
+Dcln       -> NameList ':' Type => "dcln";
+
+NameList   -> Name
+           -> NameList ',' Name;
+
+Type       -> INTEGER => "integer"
+           -> BOOLEAN => "boolean";
+
+Body       -> BEGINX StatementList END => "block";
+
+StatementList -> Statement
+               -> StatementList ';' Statement;
+
+Statement  -> Name ASSIGNMENT Expression => "assign"
+           -> OUTPUT '(' ExprList ')'    => "output"
+           -> IF Expression THEN Statement => "if"
+           -> IF Expression THEN Statement ELSE Statement => "if"
+           -> WHILE Expression DO Statement => "while"
+           -> Body
+           ->                              => "<null>";
+
+ExprList   -> Expression
+            -> ExprList ',' Expression;
+
+Expression -> SimpleExpr
+           -> SimpleExpr LTE SimpleExpr => "<="
+           -> SimpleExpr NEQ SimpleExpr => "<>"
+           -> SimpleExpr GTE SimpleExpr => ">="
+           -> SimpleExpr '<' SimpleExpr => "<"
+           -> SimpleExpr '>' SimpleExpr => ">"
+           -> SimpleExpr '=' SimpleExpr => "="
+           -> SimpleExpr AND SimpleExpr => "and"
+           -> SimpleExpr OR SimpleExpr  => "or";
+
+SimpleExpr -> SimpleExpr '+' Term => "+"
+            -> SimpleExpr '-' Term => "-"
+            -> Term;
+
+Term       -> Term '*' Factor => "*"
+            -> Term '/' Factor => "/"
+            -> Term MOD Factor => "mod"
+            -> Factor;
+
+Factor     -> Primary POWER Factor => "**"
+            -> Primary;
+
+Primary    -> '-' Primary => "-"
+           -> '+' Primary => "+"
+           -> NOT Primary => "not"
+           -> READ => "read"
+           -> EOFX => "eof"
+           -> TRUE => "true"
+           -> FALSE => "false"
+           -> Name
+           -> INTEGER_NUM => "<integer>"
+           -> '(' Expression ')';
+
+Name       -> IDENTIFIER => "<identifier>";
