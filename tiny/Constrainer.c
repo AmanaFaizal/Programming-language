@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <header/Open_File.h>
 #include <header/CommandLine.h>
@@ -45,8 +44,12 @@
 #define ModNode 32
 #define NotNode 33
 #define EofNode 34
+#define LoopNode 35
+#define ExitNode 36
+#define SwapNode 37 
 
-#define NumberOfNodes 34
+
+#define NumberOfNodes 37
 
 typedef TreeNode UserType;
 
@@ -269,6 +272,16 @@ UserType Expression(TreeNode T)
 
    case EofNode:
       return (TypeBoolean);
+
+   case SwapNode:
+      Type1 = Expression(Child(T, 1));
+      Type2 = Expression(Child(T, 2));
+      if (Type1 != Type2)
+      {
+         ErrorHeader(T);
+         printf("SWAP TYPES DO NOT MATCH\n\n");
+      }
+      break;
 
    default:
       ErrorHeader(T);

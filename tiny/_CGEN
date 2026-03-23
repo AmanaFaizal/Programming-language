@@ -1,0 +1,70 @@
+<<< CODE GENERATOR >>> Processing Node program , Label is  
+<<< CODE GENERATOR >>> Processing Node dclns , Label is  
+<<< CODE GENERATOR >>> Processing Node dcln , Label is  
+       LIT    0             
+Incrementing Framesize to 1
+       LIT    0             
+Incrementing Framesize to 2
+       LIT    0             
+Incrementing Framesize to 3
+<<< CODE GENERATOR >>> Processing Node block , Label is  
+<<< CODE GENERATOR >>> Processing Node assign , Label is  
+<<< CODE GENERATOR >>> Processing Node <integer> , Label is  
+<<< CODE GENERATOR >>> Processing Node 5 , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BEQ           
+Decrementing Framesize to 2
+Decrementing Framesize to 1
+       SGV    0             
+<<< CODE GENERATOR >>> Processing Node assign , Label is  
+<<< CODE GENERATOR >>> Processing Node <integer> , Label is  
+<<< CODE GENERATOR >>> Processing Node 6 , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BEQ           
+Decrementing Framesize to 0
+Decrementing Framesize to -1
+       SGV    0             
+<<< CODE GENERATOR >>> Processing Node assign , Label is  
+<<< CODE GENERATOR >>> Processing Node <integer> , Label is  
+<<< CODE GENERATOR >>> Processing Node 12 , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BEQ           
+Decrementing Framesize to -2
+Decrementing Framesize to -3
+       SGV    0             
+<<< CODE GENERATOR >>> Processing Node output , Label is  
+<<< CODE GENERATOR >>> Processing Node <identifier> , Label is  
+<<< CODE GENERATOR >>> Processing Node i , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BNE           
+Decrementing Framesize to -4
+       SOS    OUTPUT        
+Decrementing Framesize to -5
+<<< CODE GENERATOR >>> Processing Node <identifier> , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BNE           
+Decrementing Framesize to -6
+       SOS    OUTPUT        
+Decrementing Framesize to -7
+       SOS    OUTPUTL       
+<<< CODE GENERATOR >>> Processing Node swap , Label is  
+<<< CODE GENERATOR >>> Processing Node output , Label is  UOP
+<<< CODE GENERATOR >>> Processing Node <identifier> , Label is  UOP
+<<< CODE GENERATOR >>> Processing Node i , Label is  UOP
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BNE           
+Decrementing Framesize to -8
+       SOS    OUTPUT        
+Decrementing Framesize to -9
+<<< CODE GENERATOR >>> Processing Node <identifier> , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+<<< CODE GENERATOR >>> Processing Node j , Label is  
+       BOP    BNE           
+Decrementing Framesize to -10
+       SOS    OUTPUT        
+Decrementing Framesize to -11
+       SOS    OUTPUTL       
+<<< CODE GENERATOR >>> Processing Node for_to , Label is  
+<<< CODE GENERATOR >>> Processing Node <null> , Label is  UOP
+UOP    HALT                 

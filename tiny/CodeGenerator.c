@@ -106,13 +106,23 @@
 #define ModNode 79        /* 'mod' */
 #define NotNode 80        /* 'not' */
 #define EofNode 81        /* 'eof' */
-#define NumberOfNodes 81  /* '<identifier>'*/
+#define LoopNode 82       /* 'loop' */
+#define ExitNode 83       /* 'exit' */
+#define SwapNode 84       /* 'swap' */
+#define ForNode 85        /* 'for' */
+#define RepeatNode 86     /* 'repeat' */
+#define CaseNode 87       /* 'case' */
+
+#define NumberOfNodes 87  /* '<identifier>'*/
 typedef int Mode;
 
 FILE *CodeFile;
 char *CodeFileName;
 Clabel HaltLabel;
 
+#define MAX_LOOP 100
+Clabel loopStack[MAX_LOOP];
+int loopTop = -1;
 char *mach_op[] =
     {"NOP", "HALT", "LIT", "LLV", "LGV", "SLV", "SGV", "LLA", "LGA",
      "UOP", "BOP", "POP", "DUP", "SWAP", "CALL", "RTN", "GOTO", "COND",
@@ -129,6 +139,7 @@ char *mach_op[] =
 char *node_name[] =
     {"program", "types", "type", "dclns", "dcln", "integer",
      "boolean", "block", "assign", "output", "if", "while",
+     "for", "repeat", "case", "loop", "exit", "swap",
      "<null>", "<=", "+", "-", "read", "<integer>", "<identifier>", "true", "false", "and", "or", "=", "<>", ">=", "<", ">",
      "*", "/", "**", "mod", "not", "eof"};
 
@@ -486,6 +497,130 @@ Clabel ProcessNode(TreeNode T, Clabel CurrLabel)
       DecrementFrameSize();
       CodeGen1(GOTOOP, Label1, ProcessNode(Child(T, 2), Label2));
       return (Label3);
+         
+   case ForNode:
+   {
+      TreeNode var   = Child(T, 1);
+      TreeNode start  = Child(T, 2);
+      TreeNode endExp = Child(T, 3);
+      TreeNode body   = Child(T, 4);
+
+      Clabel startL = MakeLabel();
+      Clabel endL   = MakeLabel();
+ 
+      Expression(start, CurrLabel);
+      Reference(var, LeftMode, NoLabel);
+
+      CodeGen0(NOP, startL);
+ 
+      Expression(var, NoLabel);
+      Expression(endExp, NoLabel);
+      
+      CodeGen2(CONDOP, endL, startL, NoLabel);
+
+      DecrementFrameSize();
+ 
+      ProcessNode(body, startL);
+      CodeGen1(GOTOOP, startL, NoLabel);
+
+      CodeGen0(NOP, endL);
+
+      return endL;
+   }
+   
+   case RepeatNode:
+   {
+      TreeNode body = Child(T, 1);
+      TreeNode cond = Child(T, 2);
+
+      Clabel L1 = MakeLabel();
+      Clabel L2 = MakeLabel();
+      CodeGen0(NOP, L1);
+      ProcessNode(body, L1);
+      Expression(cond, NoLabel);
+      CodeGen2(CONDOP, L1, L2, NoLabel);
+      DecrementFrameSize();
+
+      return L2;
+   }
+
+   case CaseNode:
+   {
+      TreeNode expr = Child(T, 1);
+      TreeNode list = Child(T, 2);
+      TreeNode elsePart = Child(T, 3);
+
+      Clabel endL = MakeLabel();
+      Clabel elseL = MakeLabel();
+
+      Expression(expr, CurrLabel);
+
+      int i;
+      for (i = 1; i <= NKids(list); i++) {
+         TreeNode item = Child(list, i);
+
+         int value = atoi(NodeName(Child(item, 1)));
+
+         Clabel nextL = MakeLabel();
+         CodeGen2(CONDOP, nextL, elseL, NoLabel);
+         ProcessNode(Child(item, 2), nextL);
+         CodeGen1(GOTOOP, endL, NoLabel);
+         CodeGen0(NOP, nextL);
+
+      }
+
+      CodeGen0(NOP, elseL);
+      ProcessNode(elsePart, elseL);
+
+      return endL;
+   }
+
+   case LoopNode:
+   {
+      Clabel start = MakeLabel();
+      Clabel end = MakeLabel();
+
+      loopStack[++loopTop] = end;
+      CodeGen0(NOP, start);
+      ProcessNode(Child(T, 1), start);
+      CodeGen1(GOTOOP, start, NoLabel);
+      CodeGen0(NOP, end);
+      loopTop--;
+
+      return end;
+   }
+
+   case ExitNode:
+   {
+      if (loopTop < 0) {
+         return NoLabel;
+      }
+
+      Clabel end = loopStack[loopTop];
+      CodeGen1(GOTOOP, end, NoLabel);
+
+      return NoLabel;
+   }
+
+   case SwapNode:
+   {
+      TreeNode A = Child(T, 1);
+      TreeNode B = Child(T, 2);
+
+      /* temp = A */
+      Reference(A, RightMode, CurrLabel);
+      CodeGen1(SWAPOP, 0, NoLabel);
+
+      /* A = B */
+      Reference(B, RightMode, NoLabel);
+      Reference(A, LeftMode, NoLabel);
+
+      /* B = temp */
+      Reference(A, RightMode, NoLabel);
+      Reference(B, LeftMode, NoLabel);
+
+      return NoLabel;
+   }
 
    case NullNode:
       return (CurrLabel);

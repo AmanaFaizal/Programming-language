@@ -1,0 +1,20 @@
+       LIT    0             
+       LIT    0             
+       LIT    0             
+       BOP    BEQ           
+       SGV    0             
+       BOP    BEQ           
+       SGV    0             
+       BOP    BEQ           
+       SGV    0             
+       BOP    BNE           
+       SOS    OUTPUT        
+       BOP    BNE           
+       SOS    OUTPUT        
+       SOS    OUTPUTL       
+       BOP    BNE           
+       SOS    OUTPUT        
+       BOP    BNE           
+       SOS    OUTPUT        
+       SOS    OUTPUTL       
+UOP    HALT                 

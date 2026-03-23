@@ -57,30 +57,41 @@ extern int yydebug;
     NEQ = 258,                     /* NEQ  */
     END = 259,                     /* END  */
     FALSE = 260,                   /* FALSE  */
-    VAR = 261,                     /* VAR  */
-    IDENTIFIER = 262,              /* IDENTIFIER  */
-    IF = 263,                      /* IF  */
-    READ = 264,                    /* READ  */
-    ELSE = 265,                    /* ELSE  */
-    THEN = 266,                    /* THEN  */
-    MOD = 267,                     /* MOD  */
-    WHILE = 268,                   /* WHILE  */
-    OUTPUT = 269,                  /* OUTPUT  */
-    GTE = 270,                     /* GTE  */
-    NOT = 271,                     /* NOT  */
-    DO = 272,                      /* DO  */
-    BEGINX = 273,                  /* BEGINX  */
-    BOOLEAN = 274,                 /* BOOLEAN  */
-    INTEGER_NUM = 275,             /* INTEGER_NUM  */
-    TRUE = 276,                    /* TRUE  */
-    AND = 277,                     /* AND  */
-    INTEGER = 278,                 /* INTEGER  */
-    EOFX = 279,                    /* EOFX  */
-    POWER = 280,                   /* POWER  */
-    LTE = 281,                     /* LTE  */
-    OR = 282,                      /* OR  */
-    ASSIGNMENT = 283,              /* ASSIGNMENT  */
-    PROGRAM = 284                  /* PROGRAM  */
+    TO = 261,                      /* TO  */
+    VAR = 262,                     /* VAR  */
+    IDENTIFIER = 263,              /* IDENTIFIER  */
+    POOL = 264,                    /* POOL  */
+    IF = 265,                      /* IF  */
+    READ = 266,                    /* READ  */
+    REPEAT = 267,                  /* REPEAT  */
+    ELSE = 268,                    /* ELSE  */
+    UNTIL = 269,                   /* UNTIL  */
+    FOR = 270,                     /* FOR  */
+    THEN = 271,                    /* THEN  */
+    SWAP = 272,                    /* SWAP  */
+    OF = 273,                      /* OF  */
+    MOD = 274,                     /* MOD  */
+    CASE = 275,                    /* CASE  */
+    WHILE = 276,                   /* WHILE  */
+    OUTPUT = 277,                  /* OUTPUT  */
+    EXIT = 278,                    /* EXIT  */
+    GTE = 279,                     /* GTE  */
+    NOT = 280,                     /* NOT  */
+    DO = 281,                      /* DO  */
+    BEGINX = 282,                  /* BEGINX  */
+    BOOLEAN = 283,                 /* BOOLEAN  */
+    TRUE = 284,                    /* TRUE  */
+    AND = 285,                     /* AND  */
+    INTEGER_NUM = 286,             /* INTEGER_NUM  */
+    INTEGER = 287,                 /* INTEGER  */
+    EOFX = 288,                    /* EOFX  */
+    POWER = 289,                   /* POWER  */
+    LTE = 290,                     /* LTE  */
+    LOOP = 291,                    /* LOOP  */
+    OR = 292,                      /* OR  */
+    ASSIGNMENT = 293,              /* ASSIGNMENT  */
+    PROGRAM = 294,                 /* PROGRAM  */
+    DOWNTO = 295                   /* DOWNTO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -92,30 +103,41 @@ extern int yydebug;
 #define NEQ 258
 #define END 259
 #define FALSE 260
-#define VAR 261
-#define IDENTIFIER 262
-#define IF 263
-#define READ 264
-#define ELSE 265
-#define THEN 266
-#define MOD 267
-#define WHILE 268
-#define OUTPUT 269
-#define GTE 270
-#define NOT 271
-#define DO 272
-#define BEGINX 273
-#define BOOLEAN 274
-#define INTEGER_NUM 275
-#define TRUE 276
-#define AND 277
-#define INTEGER 278
-#define EOFX 279
-#define POWER 280
-#define LTE 281
-#define OR 282
-#define ASSIGNMENT 283
-#define PROGRAM 284
+#define TO 261
+#define VAR 262
+#define IDENTIFIER 263
+#define POOL 264
+#define IF 265
+#define READ 266
+#define REPEAT 267
+#define ELSE 268
+#define UNTIL 269
+#define FOR 270
+#define THEN 271
+#define SWAP 272
+#define OF 273
+#define MOD 274
+#define CASE 275
+#define WHILE 276
+#define OUTPUT 277
+#define EXIT 278
+#define GTE 279
+#define NOT 280
+#define DO 281
+#define BEGINX 282
+#define BOOLEAN 283
+#define TRUE 284
+#define AND 285
+#define INTEGER_NUM 286
+#define INTEGER 287
+#define EOFX 288
+#define POWER 289
+#define LTE 290
+#define LOOP 291
+#define OR 292
+#define ASSIGNMENT 293
+#define PROGRAM 294
+#define DOWNTO 295
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -126,7 +148,7 @@ union YYSTYPE
    TOKEN_INFO info;
    DLIST dlist;
 
-#line 130 "y.tab.h"
+#line 152 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
