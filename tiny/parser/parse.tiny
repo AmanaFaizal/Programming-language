@@ -12,8 +12,6 @@ Dcln       -> NameList ':' Type => "dcln";
 NameList   -> Name
            -> NameList ',' Name;
 
-Name -> IDENTIFIER => "<identifier>";
-
 Type       -> INTEGER => "integer"
            -> BOOLEAN => "boolean";
 
@@ -32,22 +30,17 @@ ElsePart   -> ELSE Statement
 
 Statement  -> Name ASSIGNMENT Expression => "assign"
            -> Name SWAP Name => "swap"
-           -> OUTPUT '(' ExprList ')'    => "output"
+           -> OUTPUT '(' ExprList ')' => "output"
            -> IF Expression THEN Statement => "if"
            -> IF Expression THEN Statement ELSE Statement => "if"
            -> WHILE Expression DO Statement => "while"
-           
            -> FOR Name ASSIGNMENT Expression TO Expression DO Statement => "for_to"
            -> FOR Name ASSIGNMENT Expression DOWNTO Expression DO Statement => "for_downto"
-
            -> REPEAT StatementList UNTIL Expression => "repeat"
-
            -> CASE Expression OF CaseList ElsePart END => "case"
-
            -> LOOP StatementList POOL => "loop"
-
            -> EXIT => "exit"
-
+           
            -> Body
            ->                              => "<null>";
 

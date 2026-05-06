@@ -1,3 +1,8 @@
+/****************************************************************
+              Copyright (C) 1986 by Manuel E. Bermudez
+              Translated to C - 1991
+*****************************************************************/
+
 #include <stdio.h>
 #include <header/Open_File.h>
 #include <header/CommandLine.h>
@@ -44,12 +49,15 @@
 #define ModNode 32
 #define NotNode 33
 #define EofNode 34
-#define LoopNode 35
-#define ExitNode 36
-#define SwapNode 37 
+#define ForToNode 35
+#define ForDownToNode 36
+#define RepeatNode 37
+#define CaseNode 38
+#define LoopNode 39
+#define ExitNode 40
+#define SwapNode 41
 
-
-#define NumberOfNodes 37
+#define NumberOfNodes 41
 
 typedef TreeNode UserType;
 
@@ -63,7 +71,8 @@ char *node[] = {"program", "types", "type", "dclns",
                 "assign", "output", "if", "while",
                 "<null>", "<=", "+", "-", "read",
                 "<integer>", "<identifier>", "true", "false", "and", "or", "=", "<>", ">=", "<", ">",
-                "*", "/", "**", "mod", "not", "eof"};
+                "*", "/", "**", "mod", "not", "eof",
+                "for_to","for_downto","repeat","case","loop","exit","swap"};
 
 UserType TypeInteger, TypeBoolean;
 boolean TraceSpecified;
@@ -273,16 +282,6 @@ UserType Expression(TreeNode T)
    case EofNode:
       return (TypeBoolean);
 
-   case SwapNode:
-      Type1 = Expression(Child(T, 1));
-      Type2 = Expression(Child(T, 2));
-      if (Type1 != Type2)
-      {
-         ErrorHeader(T);
-         printf("SWAP TYPES DO NOT MATCH\n\n");
-      }
-      break;
-
    default:
       ErrorHeader(T);
       printf("UNKNOWN NODE NAME ");
@@ -407,9 +406,56 @@ void ProcessNode(TreeNode T)
       ProcessNode(Child(T, 2));
       break;
 
+   case SwapNode:
+      Type1 = Expression(Child(T,1));
+      Type2 = Expression(Child(T,2));
+      break;
+
+   case ForToNode:
+   case ForDownToNode: 
+      if (Expression(Child(T, 2)) != TypeInteger ||
+         Expression(Child(T, 3)) != TypeInteger)
+      {
+         ErrorHeader(T);
+         printf("FOR bounds must be integer\n\n");
+      }
+
+      ProcessNode(Child(T, 4));  
+      break;
+
+   case RepeatNode:
+      ProcessNode(Child(T, 1));  
+
+      if (Expression(Child(T, 2)) != TypeBoolean)
+      {
+         ErrorHeader(T);
+         printf("UNTIL condition must be boolean\n\n");
+      }
+      break;
+
+   case LoopNode:
+      ProcessNode(Child(T, 1));
+      break;
+
    case NullNode:
       break;
 
+   case ExitNode:
+      break;
+ 
+   case CaseNode:
+      if (Expression(Child(T, 1)) != TypeInteger)
+      {
+         ErrorHeader(T);
+         printf("CASE expression must be integer\n\n");
+      }
+
+      ProcessNode(Child(T, 2));  
+      if (NKids(T) == 3)
+         ProcessNode(Child(T, 3));  
+
+      break;
+      
    default:
       ErrorHeader(T);
       printf("UNKNOWN NODE NAME ");

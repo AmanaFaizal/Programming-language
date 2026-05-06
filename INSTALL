@@ -26,6 +26,7 @@ Instructions on installing and compiling the TWS.
 	 %./tc tests/p4   |   (Project 0) consists of writing an 
 	 %./tc tests/p5   |   eighth Tiny program, to become %familiar
 	 %./tc tests/p6   |   with the language and the %compiler.
-	 %./tc tests/p7   +   
+	 %./tc tests/p7   +  
+	 %./tc Lab4tests/pr2.c01 
 
 

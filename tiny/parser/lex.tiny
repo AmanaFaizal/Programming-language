@@ -30,28 +30,23 @@ STR     \"[^\"]+\"
 "boolean"   { return rule(BOOLEAN); }
 "begin"     { return rule(BEGINX); }
 "end"       { return rule(END); }
-":=:"       { return SWAP; }
-
 ":="        { return rule(ASSIGNMENT); }
+":=:"       { return rule(SWAP); }
 "output"    { return rule(OUTPUT); }
 "if"        { return rule(IF); }
 "then"      { return rule(THEN); }
 "else"      { return rule(ELSE); }
 "while"     { return rule(WHILE); }
-"do"        { return rule(DO); }
-"for"       { return rule(FOR); }
-"to"        { return rule(TO); }
-"downto"    { return rule(DOWNTO); }
 
-"repeat"    { return rule(REPEAT); }
-"until"     { return rule(UNTIL); }
+"for"     { return rule(FOR); }
+"to"      { return rule(TO); }
+"downto"  { return rule(DOWNTO); }
+"do"      { return rule(DO); }
 
-"case"      { return rule(CASE); }
-"of"        { return rule(OF); }
-
-"loop"      { return rule(LOOP); }
-"pool"      { return rule(POOL); }
-"exit"      { return rule(EXIT); }
+"read"      { return rule(READ); }
+"true"      { return rule(TRUE); }
+"false"     { return rule(FALSE); }
+"eof"       { return rule(EOFX); }
 
 "<="        { return rule(LTE); }
 "<>"        { return rule(NEQ); }
@@ -61,13 +56,6 @@ STR     \"[^\"]+\"
 "or"        { return rule(OR); }
 "mod"       { return rule(MOD); }
 "not"       { return rule(NOT); }
-"eof"       { return rule(EOFX); }
-
-"true"      { return rule(TRUE); }
-"false"     { return rule(FALSE); }
-
-"read"      { return rule(READ); }
-
 "**"        { return rule(POWER); }
 
 "<"         { return rule(yytext[0]); }

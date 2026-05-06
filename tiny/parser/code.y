@@ -66,8 +66,8 @@ typedef struct {
 %type <dlist> Statement
 %type <dlist> Term
 %type <dlist> StatementList
-%type <dlist> Body
 %type <dlist> Name
+%type <dlist> Body
 %type <dlist> ExprList
 %type <dlist> CaseList
 %type <dlist> Type
@@ -263,41 +263,6 @@ NameList : Name
 		while (DCount(&$3) > 0)
 		    DAddTail(&r,DRemHead(&$3));
 
-		$$ = r;
-
-             }
-         ;
-
-Name     : IDENTIFIER 
-             {
-		DLIST r;
-		T_NODE *t;
-
-		InitDList(&r);
-
-		if ($1.makenode) {
-		    T_NODE *t2;
-		    t2 = (T_NODE *)malloc(sizeof(T_NODE));
-		    assert(t2);
-		    t2->nodeptr = AllocTreeNode(TREETAG_STRING,$1.string,
-		                                TREETAG_LINE,$1.line,
-		                                TREETAG_COLUMN,$1.column,
-		                                TREETAG_DONE);
-		    DAddTail(&r,&t2->mynode);
-		}
-
-		t = (T_NODE *)malloc(sizeof(T_NODE));
-		assert(t);
-		t->nodeptr = AllocTreeNode(TREETAG_STRING,"<identifier>",
-		                                TREETAG_LINE,$1.line,
-		                                TREETAG_COLUMN,$1.column,
-		                           TREETAG_DONE);
-		while (DCount(&r) > 0) {
-		    T_NODE *t3 = DRemHead(&r);
-		    AddChild(t->nodeptr,t3->nodeptr);
-		    free(t3);
-		}
-		DAddTail(&r,&t->mynode);
 		$$ = r;
 
              }

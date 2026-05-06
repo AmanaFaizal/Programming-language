@@ -106,23 +106,22 @@
 #define ModNode 79        /* 'mod' */
 #define NotNode 80        /* 'not' */
 #define EofNode 81        /* 'eof' */
-#define LoopNode 82       /* 'loop' */
-#define ExitNode 83       /* 'exit' */
-#define SwapNode 84       /* 'swap' */
-#define ForNode 85        /* 'for' */
-#define RepeatNode 86     /* 'repeat' */
-#define CaseNode 87       /* 'case' */
+#define ForToNode 82
+#define ForDownToNode 83
+#define RepeatNode 84
+#define CaseNode 85
+#define LoopNode 86
+#define ExitNode 87
+#define SwapNode 88
 
-#define NumberOfNodes 87  /* '<identifier>'*/
+#define NumberOfNodes 88 /* '<identifier>'*/
 typedef int Mode;
 
 FILE *CodeFile;
 char *CodeFileName;
 Clabel HaltLabel;
+Clabel LoopExitLabel;
 
-#define MAX_LOOP 100
-Clabel loopStack[MAX_LOOP];
-int loopTop = -1;
 char *mach_op[] =
     {"NOP", "HALT", "LIT", "LLV", "LGV", "SLV", "SGV", "LLA", "LGA",
      "UOP", "BOP", "POP", "DUP", "SWAP", "CALL", "RTN", "GOTO", "COND",
@@ -139,9 +138,9 @@ char *mach_op[] =
 char *node_name[] =
     {"program", "types", "type", "dclns", "dcln", "integer",
      "boolean", "block", "assign", "output", "if", "while",
-     "for", "repeat", "case", "loop", "exit", "swap",
      "<null>", "<=", "+", "-", "read", "<integer>", "<identifier>", "true", "false", "and", "or", "=", "<>", ">=", "<", ">",
-     "*", "/", "**", "mod", "not", "eof"};
+     "*", "/", "**", "mod", "not", "eof",
+     "for_to", "for_downto", "repeat", "case", "loop", "exit", "swap"};
 
 void CodeGenerate(int argc, char *argv[])
 {
@@ -478,11 +477,20 @@ Clabel ProcessNode(TreeNode T, Clabel CurrLabel)
       Label3 = MakeLabel();
       CodeGen2(CONDOP, Label1, Label2, NoLabel);
       DecrementFrameSize();
-      CodeGen1(GOTOOP, Label3, ProcessNode(Child(T, 2), Label1));
+
+      ProcessNode(Child(T, 2), Label1);
+      CodeGen1(GOTOOP, Label3, NoLabel);
+
       if (Rank(T) == 3)
-         CodeGen0(NOP, ProcessNode(Child(T, 3), Label2));
-      else
+      {
          CodeGen0(NOP, Label2);
+         ProcessNode(Child(T, 3), Label2);
+      }
+      else
+      {
+         CodeGen0(NOP, Label2);
+      }
+
       return (Label3);
 
    case WhileNode:
@@ -490,136 +498,143 @@ Clabel ProcessNode(TreeNode T, Clabel CurrLabel)
          Label1 = MakeLabel();
       else
          Label1 = CurrLabel;
+
+      CodeGen0(NOP, Label1);
+      Expression(Child(T, 1), NoLabel);
+
       Label2 = MakeLabel();
       Label3 = MakeLabel();
-      Expression(Child(T, 1), Label1);
+
       CodeGen2(CONDOP, Label2, Label3, NoLabel);
-      DecrementFrameSize();
-      CodeGen1(GOTOOP, Label1, ProcessNode(Child(T, 2), Label2));
-      return (Label3);
-         
-   case ForNode:
+
+      CodeGen0(NOP, Label2);
+      ProcessNode(Child(T, 2), NoLabel);
+      CodeGen1(GOTOOP, Label1, NoLabel);
+
+   case SwapNode:
+      Reference(Child(T, 1), RightMode, CurrLabel);
+      Reference(Child(T, 2), RightMode, NoLabel);
+      CodeGen0(SWAPOP, NoLabel);
+
+      Reference(Child(T, 1), LeftMode, NoLabel);
+      Reference(Child(T, 2), LeftMode, NoLabel);
+
+      return (NoLabel);
+
+   case ForToNode:
    {
-      TreeNode var   = Child(T, 1);
-      TreeNode start  = Child(T, 2);
-      TreeNode endExp = Child(T, 3);
-      TreeNode body   = Child(T, 4);
+      Clabel start = MakeLabel();
+      Clabel end = MakeLabel();
+      Expression(Child(T, 2), CurrLabel);
+      Reference(Child(T, 1), LeftMode, NoLabel);
 
-      Clabel startL = MakeLabel();
-      Clabel endL   = MakeLabel();
- 
-      Expression(start, CurrLabel);
-      Reference(var, LeftMode, NoLabel);
+      CodeGen0(NOP, start);
 
-      CodeGen0(NOP, startL);
- 
-      Expression(var, NoLabel);
-      Expression(endExp, NoLabel);
-      
-      CodeGen2(CONDOP, endL, startL, NoLabel);
-
+      Reference(Child(T, 1), RightMode, NoLabel);
+      Expression(Child(T, 3), NoLabel);
+      CodeGen1(BOPOP, BLE, NoLabel);
       DecrementFrameSize();
- 
-      ProcessNode(body, startL);
-      CodeGen1(GOTOOP, startL, NoLabel);
 
-      CodeGen0(NOP, endL);
+      CodeGen1(GOTOOP, end, NoLabel);
+      ProcessNode(Child(T, 4), NoLabel);
 
-      return endL;
+      Reference(Child(T, 1), RightMode, NoLabel);
+      CodeGen1(LITOP, MakeStringOf(1), NoLabel);
+      CodeGen1(BOPOP, BPLUS, NoLabel);
+      DecrementFrameSize();
+      Reference(Child(T, 1), LeftMode, NoLabel);
+
+      CodeGen1(GOTOOP, start, NoLabel);
+
+      return end;
    }
-   
+
+   case ForDownToNode:
+   {
+      Clabel start = MakeLabel();
+      Clabel end = MakeLabel();
+
+      Expression(Child(T, 2), CurrLabel);
+      Reference(Child(T, 1), LeftMode, NoLabel);
+
+      CodeGen0(NOP, start);
+
+      Reference(Child(T, 1), RightMode, NoLabel);
+      Expression(Child(T, 3), NoLabel);
+      CodeGen1(BOPOP, BGE, NoLabel);
+      DecrementFrameSize();
+
+      CodeGen2(CONDOP, end, end, NoLabel);
+
+      ProcessNode(Child(T, 4), NoLabel);
+
+      Reference(Child(T, 1), RightMode, NoLabel);
+      CodeGen1(LITOP, MakeStringOf(1), NoLabel);
+      CodeGen1(BOPOP, BMINUS, NoLabel);
+      DecrementFrameSize();
+      Reference(Child(T, 1), LeftMode, NoLabel);
+
+      CodeGen1(GOTOOP, start, NoLabel);
+
+      return end;
+   }
    case RepeatNode:
    {
-      TreeNode body = Child(T, 1);
-      TreeNode cond = Child(T, 2);
+      Clabel start = MakeLabel();
 
-      Clabel L1 = MakeLabel();
-      Clabel L2 = MakeLabel();
-      CodeGen0(NOP, L1);
-      ProcessNode(body, L1);
-      Expression(cond, NoLabel);
-      CodeGen2(CONDOP, L1, L2, NoLabel);
+      CodeGen0(NOP, start);
+
+      ProcessNode(Child(T, 1), NoLabel);
+
+      Expression(Child(T, 2), NoLabel);
+      CodeGen2(CONDOP, start, NoLabel, NoLabel);
       DecrementFrameSize();
 
-      return L2;
-   }
-
-   case CaseNode:
-   {
-      TreeNode expr = Child(T, 1);
-      TreeNode list = Child(T, 2);
-      TreeNode elsePart = Child(T, 3);
-
-      Clabel endL = MakeLabel();
-      Clabel elseL = MakeLabel();
-
-      Expression(expr, CurrLabel);
-
-      int i;
-      for (i = 1; i <= NKids(list); i++) {
-         TreeNode item = Child(list, i);
-
-         int value = atoi(NodeName(Child(item, 1)));
-
-         Clabel nextL = MakeLabel();
-         CodeGen2(CONDOP, nextL, elseL, NoLabel);
-         ProcessNode(Child(item, 2), nextL);
-         CodeGen1(GOTOOP, endL, NoLabel);
-         CodeGen0(NOP, nextL);
-
-      }
-
-      CodeGen0(NOP, elseL);
-      ProcessNode(elsePart, elseL);
-
-      return endL;
+      return NoLabel;
    }
 
    case LoopNode:
    {
       Clabel start = MakeLabel();
-      Clabel end = MakeLabel();
+      LoopExitLabel = MakeLabel();
 
-      loopStack[++loopTop] = end;
       CodeGen0(NOP, start);
-      ProcessNode(Child(T, 1), start);
-      CodeGen1(GOTOOP, start, NoLabel);
-      CodeGen0(NOP, end);
-      loopTop--;
 
-      return end;
+      ProcessNode(Child(T, 1), NoLabel);
+
+      CodeGen1(GOTOOP, start, NoLabel);
+
+      return LoopExitLabel;
    }
 
    case ExitNode:
+      CodeGen1(GOTOOP, LoopExitLabel, CurrLabel);
+      return NoLabel;
+
+   case CaseNode:
    {
-      if (loopTop < 0) {
-         return NoLabel;
+      Clabel end = MakeLabel();
+      int i;
+
+      for (i = 2; i <= NKids(T); i++)
+      {
+         Clabel next = MakeLabel();
+
+         Expression(Child(T, 1), CurrLabel);
+         Expression(Child(Child(T, i), 1), NoLabel);
+
+         CodeGen1(BOPOP, BEQ, NoLabel);
+         DecrementFrameSize();
+
+         CodeGen2(CONDOP, next, next, NoLabel);
+
+         ProcessNode(Child(Child(T, i), 2), NoLabel);
+         CodeGen1(GOTOOP, end, NoLabel);
+
+         CodeGen0(NOP, next);
       }
 
-      Clabel end = loopStack[loopTop];
-      CodeGen1(GOTOOP, end, NoLabel);
-
-      return NoLabel;
-   }
-
-   case SwapNode:
-   {
-      TreeNode A = Child(T, 1);
-      TreeNode B = Child(T, 2);
-
-      /* temp = A */
-      Reference(A, RightMode, CurrLabel);
-      CodeGen1(SWAPOP, 0, NoLabel);
-
-      /* A = B */
-      Reference(B, RightMode, NoLabel);
-      Reference(A, LeftMode, NoLabel);
-
-      /* B = temp */
-      Reference(A, RightMode, NoLabel);
-      Reference(B, LeftMode, NoLabel);
-
-      return NoLabel;
+      return end;
    }
 
    case NullNode:
