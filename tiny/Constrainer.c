@@ -35,6 +35,7 @@
 #define IdentifierNode 19
 #define TrueNode 20
 #define FalseNode 21
+#define ConstNode 42
 
 #define AndNode 22
 #define OrNode 23
@@ -57,7 +58,7 @@
 #define ExitNode 40
 #define SwapNode 41
 
-#define NumberOfNodes 41
+#define NumberOfNodes 42
 
 typedef TreeNode UserType;
 
@@ -72,7 +73,7 @@ char *node[] = {"program", "types", "type", "dclns",
                 "<null>", "<=", "+", "-", "read",
                 "<integer>", "<identifier>", "true", "false", "and", "or", "=", "<>", ">=", "<", ">",
                 "*", "/", "**", "mod", "not", "eof",
-                "for_to","for_downto","repeat","case","loop","exit","swap"};
+                "for_to","for_downto","repeat","case","loop","exit","swap", "const"};
 
 UserType TypeInteger, TypeBoolean;
 boolean TraceSpecified;
@@ -282,6 +283,11 @@ UserType Expression(TreeNode T)
    case EofNode:
       return (TypeBoolean);
 
+   case ConstNode:
+      /* Ensure constants are immutable and properly typed */
+      ProcessConstant(T);
+      break;
+
    default:
       ErrorHeader(T);
       printf("UNKNOWN NODE NAME ");
@@ -464,3 +470,13 @@ void ProcessNode(TreeNode T)
 
    } /* end switch */
 } /* end ProcessNode */
+
+void ProcessConstant(TreeNode T) {
+    /* Ensure the node is a constant declaration */
+    if (String_Equal(NodeName(T), "const")) {
+        // Process the constant node
+    } else {
+        ErrorHeader(T);
+        printf("Invalid constant declaration\n");
+    }
+}

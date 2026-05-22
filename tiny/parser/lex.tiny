@@ -67,6 +67,8 @@ STR     \"[^\"]+\"
 {INT}       { return node(INTEGER_NUM); }
 {IDENT}     { return node(IDENTIFIER); }
 
+"const"     { return rule(CONST); }
+
 "{"         { column += yyleng; BEGIN(COMM1); }
 <COMM1>[^}\n]+ { column += yyleng; }
 <COMM1>"}"  { column += yyleng; BEGIN(INITIAL); }

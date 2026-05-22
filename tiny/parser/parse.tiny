@@ -1,8 +1,17 @@
 %%
 Tiny       -> PROGRAM Name ':' Dclns Body Name '.' => "program";
 
-Dclns      -> VAR DclnList => "dclns"
+Dclns      -> CONST ConstList ';' Dclns => "const_dclns"
+           -> VAR DclnList => "dclns"
            ->              => "dclns";
+
+ConstList  -> Const
+           -> ConstList ',' Const;
+
+Const      -> Name '=' ConstantValue => "const";
+
+ConstantValue -> INTEGER_NUM => "<integer>"
+              -> LIT => "<char>";
 
 DclnList   -> Dcln ';'
            -> DclnList Dcln ';';

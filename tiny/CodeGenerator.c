@@ -113,8 +113,9 @@
 #define LoopNode 86
 #define ExitNode 87
 #define SwapNode 88
+#define ConstNode 89
 
-#define NumberOfNodes 88 /* '<identifier>'*/
+#define NumberOfNodes 90 /* '<identifier>'*/
 typedef int Mode;
 
 FILE *CodeFile;
@@ -140,7 +141,7 @@ char *node_name[] =
      "boolean", "block", "assign", "output", "if", "while",
      "<null>", "<=", "+", "-", "read", "<integer>", "<identifier>", "true", "false", "and", "or", "=", "<>", ">=", "<", ">",
      "*", "/", "**", "mod", "not", "eof",
-     "for_to", "for_downto", "repeat", "case", "loop", "exit", "swap"};
+     "for_to", "for_downto", "repeat", "case", "loop", "exit", "swap", "const"};
 
 void CodeGenerate(int argc, char *argv[])
 {
@@ -386,6 +387,11 @@ void Expression(TreeNode T, Clabel CurrLabel)
 
       CodeGen1(SOSOP, OSEOF, CurrLabel);
       IncrementFrameSize();
+      break;
+
+   case ConstNode:
+      // Generate code to handle constants
+      GenerateConstant(T);
       break;
 
    default:
@@ -648,3 +654,20 @@ Clabel ProcessNode(TreeNode T, Clabel CurrLabel)
 
    } /* end switch */
 } /* end ProcessNode */
+
+void GenerateConstant(TreeNode T)
+{
+   int i;
+   char *s;
+
+   if (NodeName(T) == ConstNode)
+   {
+      i = 0;
+      s = (char *)NodeData(T);
+      while (s[i] != '\0')
+      {
+         CodeGen1(LITOP, s[i]);
+         i++;
+      }
+   }
+}
