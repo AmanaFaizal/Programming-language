@@ -2,10 +2,12 @@
 #include <iostream>
 #include <stdexcept>
 
-Lexer::Lexer(const std::string& filename) : currentLine(1) {
+using namespace std;
+
+Lexer::Lexer(const string& filename) : currentLine(1) {
     file.open(filename);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file " + filename);
+        throw runtime_error("Could not open file " + filename);
     }
     advance();
 }
@@ -22,12 +24,16 @@ void Lexer::advance() {
             currentLine++;
         }
     } else {
-        currentChar = EOF;
+        currentChar = '\0';
     }
 }
 
 char Lexer::peek() {
     return file.peek();
+}
+
+bool Lexer::isPunctuation(char c) {
+    return c == '(' || c == ')' || c == ';' || c == ',';
 }
 
 bool Lexer::isLetter(char c) {
@@ -39,12 +45,8 @@ bool Lexer::isDigit(char c) {
 }
 
 bool Lexer::isOperatorSymbol(char c) {
-    const std::string ops = "+-*<>&.@/:=~|$!#%^_[}\"{`?";
-    return ops.find(c) != std::string::npos;
-}
-
-bool Lexer::isPunctuation(char c) {
-    return c == '(' || c == ')' || c == ';' || c == ',';
+    const string ops = "+-*<>&.@/:=~|$!#%^_[}\"{`?";
+    return ops.find(c) != string::npos;
 }
 
 bool Lexer::isWhitespace(char c) {
@@ -60,12 +62,13 @@ Token Lexer::getNextToken() {
 }
 
 Token Lexer::getNextRealToken() {
-    if (currentChar == EOF || file.eof()) {
+
+    if (!file) {
         return Token("", TokenType::END_OF_FILE, currentLine);
     }
 
     if (isWhitespace(currentChar)) {
-        std::string val = "";
+        string val = "";
         while (currentChar != EOF && isWhitespace(currentChar)) {
             val += currentChar;
             advance();
@@ -73,9 +76,8 @@ Token Lexer::getNextRealToken() {
         return Token(val, TokenType::DELETE_TOKEN, currentLine);
     }
 
-    if (currentChar == '/' && peek() == '/') {
-        // Comment
-        std::string val = "";
+    if (currentChar == '/' && peek() == '/') { // Comment
+        string val = "";
         while (currentChar != EOF && currentChar != '\n') {
             val += currentChar;
             advance();
@@ -88,7 +90,7 @@ Token Lexer::getNextRealToken() {
     }
 
     if (isLetter(currentChar)) {
-        std::string val = "";
+        string val = "";
         int startLine = currentLine;
         while (currentChar != EOF && (isLetter(currentChar) || isDigit(currentChar) || currentChar == '_')) {
             val += currentChar;
@@ -98,7 +100,7 @@ Token Lexer::getNextRealToken() {
     }
 
     if (isDigit(currentChar)) {
-        std::string val = "";
+        string val = "";
         int startLine = currentLine;
         while (currentChar != EOF && isDigit(currentChar)) {
             val += currentChar;
@@ -108,12 +110,14 @@ Token Lexer::getNextRealToken() {
     }
 
     if (currentChar == '\'') {
-        std::string val = "";
+        string val = "";
         int startLine = currentLine;
-        advance(); // consume opening quote
+        advance(); // skip opening 
+        
         while (currentChar != EOF && currentChar != '\'') {
             if (currentChar == '\\') {
                 advance();
+
                 if (currentChar == 't') val += '\t';
                 else if (currentChar == 'n') val += '\n';
                 else if (currentChar == '\\') val += '\\';
@@ -130,8 +134,15 @@ Token Lexer::getNextRealToken() {
         return Token(val, TokenType::STRING, startLine);
     }
 
+    if (isPunctuation(currentChar)) {
+        string val = string(1, currentChar);
+        int startLine = currentLine;
+        advance();
+        return Token(val, TokenType::PUNCTUATION, startLine);
+    }
+
     if (isOperatorSymbol(currentChar)) {
-        std::string val = "";
+        string val = "";
         int startLine = currentLine;
         while (currentChar != EOF && isOperatorSymbol(currentChar)) {
             val += currentChar;
@@ -140,21 +151,15 @@ Token Lexer::getNextRealToken() {
         return Token(val, TokenType::OPERATOR, startLine);
     }
 
-    if (isPunctuation(currentChar)) {
-        std::string val = std::string(1, currentChar);
-        int startLine = currentLine;
-        advance();
-        return Token(val, TokenType::PUNCTUATION, startLine);
-    }
 
-    std::string val = std::string(1, currentChar);
+    string val = string(1, currentChar);
     int startLine = currentLine;
     advance();
     return Token(val, TokenType::UNKNOWN, startLine);
 }
 
-std::vector<Token> Lexer::getAllTokens() {
-    std::vector<Token> tokens;
+vector<Token> Lexer::getAllTokens() {
+    vector<Token> tokens;
     Token t = getNextToken();
     while (t.type != TokenType::END_OF_FILE) {
         tokens.push_back(t);

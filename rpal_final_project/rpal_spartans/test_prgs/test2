@@ -1,0 +1,1 @@
+let rec fact n = n gr 1 -> n * fact (n - 1) | 1 in Print(fact 5)
