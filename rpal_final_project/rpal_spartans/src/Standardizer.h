@@ -6,15 +6,17 @@
 #include <vector>
 #include <string>
 
+using namespace std;
+
 class Standardizer {
 private:
-    std::shared_ptr<TreeNode> makeNode(const std::string& type, const std::string& value = "");
-    std::shared_ptr<TreeNode> createLambda(std::shared_ptr<TreeNode> V, std::shared_ptr<TreeNode> E);
-    std::shared_ptr<TreeNode> standardizeNode(std::shared_ptr<TreeNode> node);
+    shared_ptr<TreeNode> makeNode(const string& type, const string& value = "");
+    shared_ptr<TreeNode> createLambda(shared_ptr<TreeNode> V, shared_ptr<TreeNode> E);
+    shared_ptr<TreeNode> standardizeNode(shared_ptr<TreeNode> node);
 
 public:
     Standardizer() {}
-    std::shared_ptr<TreeNode> standardize(std::shared_ptr<TreeNode> root);
+    shared_ptr<TreeNode> standardize(shared_ptr<TreeNode> root);
 };
 
-#endif // STANDARDIZER_H
+#endif 
