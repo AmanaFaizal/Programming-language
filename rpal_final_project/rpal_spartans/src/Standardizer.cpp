@@ -1,3 +1,4 @@
+
 #include "Standardizer.h"
 #include <iostream>
 
@@ -7,331 +8,333 @@ shared_ptr<TreeNode> Standardizer::makeNode(const string& type, const string& va
     return make_shared<TreeNode>(type, value);
 }
 
-shared_ptr<TreeNode> Standardizer::createLambda(shared_ptr<TreeNode> V, shared_ptr<TreeNode> E) {
+shared_ptr<TreeNode> makeGamma(
+    shared_ptr<TreeNode> left,
+    shared_ptr<TreeNode> right)
+{
+    auto gamma = make_shared<TreeNode>("gamma");
+
+    gamma->setChild(left);
+    left->setSibling(right);
+
+    return gamma;
+}
+
+vector<shared_ptr<TreeNode>> detachSiblings(shared_ptr<TreeNode> start) {
+    vector<shared_ptr<TreeNode>> nodes;
+
+    while (start) {
+        auto next = start->sibling;
+        start->setSibling(nullptr);
+        nodes.push_back(start);
+        start = next;
+    }
+
+    return nodes;
+}
+
+shared_ptr<TreeNode> Standardizer::createLambda(
+    shared_ptr<TreeNode> V,
+    shared_ptr<TreeNode> E)
+{
     if (V->type == ",") {
         auto T = makeNode("<IDENTIFIER>", "T++");
-        auto current_body = E;
-        
-        vector<shared_ptr<TreeNode>> vars;
-        auto v = V->child;
-        while (v) {
-            auto next = v->sibling;
-            v->setSibling(nullptr);
-            vars.push_back(v);
-            v = next;
-        }
-        
+        auto vars = detachSiblings(V->child);
+
+        auto currentBody = E;
+
         for (int i = (int)vars.size() - 1; i >= 0; --i) {
-            auto gamma_app = makeNode("gamma");
-            auto lambda_inner = makeNode("lambda");
-            auto gamma_tuple = makeNode("gamma");
-            auto T_ref = makeNode("<IDENTIFIER>", "T++");
+            auto tupleGamma = makeNode("gamma");
+            auto lambdaInner = makeNode("lambda");
+            auto gammaApp = makeNode("gamma");
+
+            auto tRef = makeNode("<IDENTIFIER>", "T++");
             auto index = makeNode("<INTEGER>", to_string(i + 1));
-            
-            gamma_tuple->setChild(T_ref);
-            T_ref->setSibling(index);
-            
-            lambda_inner->setChild(vars[i]);
-            vars[i]->setSibling(current_body);
-            
-            gamma_app->setChild(lambda_inner);
-            lambda_inner->setSibling(gamma_tuple);
-            
-            current_body = gamma_app;
+
+            tupleGamma->setChild(tRef);
+            tRef->setSibling(index);
+
+            lambdaInner->setChild(vars[i]);
+            vars[i]->setSibling(currentBody);
+
+            gammaApp->setChild(lambdaInner);
+            lambdaInner->setSibling(tupleGamma);
+
+            currentBody = gammaApp;
         }
-        
-        auto final_lambda = makeNode("lambda");
-        final_lambda->setChild(T);
-        T->setSibling(current_body);
-        return final_lambda;
-    } else {
-        auto final_lambda = makeNode("lambda");
-        final_lambda->setChild(V);
-        V->setSibling(E);
-        return final_lambda;
+
+        auto finalLambda = makeNode("lambda");
+        finalLambda->setChild(T);
+        T->setSibling(currentBody);
+
+        return finalLambda;
     }
+
+    auto lambda = makeNode("lambda");
+    lambda->setChild(V);
+    V->setSibling(E);
+
+    return lambda;
 }
 
 shared_ptr<TreeNode> Standardizer::standardize(shared_ptr<TreeNode> root) {
-    if (!root) return nullptr;
+    if (!root)
+        return nullptr;
+
     return standardizeNode(root);
 }
 
 shared_ptr<TreeNode> Standardizer::standardizeNode(shared_ptr<TreeNode> node) {
-    if (!node) return nullptr;
+    if (!node)
+        return nullptr;
 
-    if (node->child) {
+    if (node->child)
         node->child = standardizeNode(node->child);
-    }
-    if (node->sibling) {
+
+    if (node->sibling)
         node->sibling = standardizeNode(node->sibling);
-    }
 
     string t = node->type;
-    shared_ptr<TreeNode> result = node;
+
+    // =====================================================
+    // let
+    // =====================================================
 
     if (t == "let") {
         auto eq = node->child;
-        if (!eq || eq->type != "=") return node;
+
+        if (!eq || eq->type != "=")
+            return node;
+
         auto X = eq->child;
         auto E = X->sibling;
         auto P = eq->sibling;
-        
-        auto gamma = makeNode("gamma");
+
         auto lambda = createLambda(X, P);
-        
-        gamma->setChild(lambda);
-        lambda->setSibling(E);
-        
-        result = gamma;
+        auto gamma = makeGamma(lambda, E);
+
+        gamma->setSibling(node->sibling);
+        return gamma;
     }
-    else if (t == "where") {
+
+    // =====================================================
+    // where
+    // =====================================================
+
+    if (t == "where") {
         auto P = node->child;
         auto eq = P->sibling;
-        if (!eq || eq->type != "=") return node;
+
+        if (!eq || eq->type != "=")
+            return node;
+
         auto X = eq->child;
         auto E = X->sibling;
-        
+
         P->setSibling(nullptr);
-        auto gamma = makeNode("gamma");
+
         auto lambda = createLambda(X, P);
-        
-        gamma->setChild(lambda);
-        lambda->setSibling(E);
-        
-        result = gamma;
+        auto gamma = makeGamma(lambda, E);
+
+        gamma->setSibling(node->sibling);
+        return gamma;
     }
-    else if (t == "within") {
+
+    // =====================================================
+    // within
+    // =====================================================
+
+    if (t == "within") {
         auto eq1 = node->child;
         auto eq2 = eq1->sibling;
-        if (!eq1 || !eq2 || eq1->type != "=" || eq2->type != "=") return node;
+
+        if (!eq1 || !eq2)
+            return node;
+
         auto X1 = eq1->child;
         auto E1 = X1->sibling;
+
         auto X2 = eq2->child;
         auto E2 = X2->sibling;
-        
+
         E1->setSibling(nullptr);
         E2->setSibling(nullptr);
-        
-        auto new_eq = makeNode("=");
-        auto gamma = makeNode("gamma");
+
         auto lambda = createLambda(X1, E2);
-        
-        new_eq->setChild(X2);
+        auto gamma = makeGamma(lambda, E1 );
+
+        auto newEq = makeNode("=");
+        newEq->setChild(X2);
         X2->setSibling(gamma);
-        gamma->setChild(lambda);
-        lambda->setSibling(E1);
-        
-        result = new_eq;
+
+        newEq->setSibling(node->sibling);
+        return newEq;
     }
-    else if (t == "rec") {
+
+    // =====================================================
+    // rec
+    // =====================================================
+
+    if (t == "rec") {
         auto eq = node->child;
-        if (!eq || eq->type != "=") return node;
+
+        if (!eq || eq->type != "=")
+            return node;
+
         auto X = eq->child;
         auto E = X->sibling;
-        
+
         E->setSibling(nullptr);
-        
-        auto new_eq = makeNode("=");
-        auto gamma = makeNode("gamma");
+
         auto ystar = makeNode("<IDENTIFIER>", "Ystar");
-        
-        auto X_copy = makeNode(X->type, X->value);
-        auto lambda = createLambda(X_copy, E);
-        
-        new_eq->setChild(X);
-        X->setSibling(gamma);
+        auto Xcopy = makeNode(X->type, X->value);
+
+        auto lambda = createLambda(Xcopy, E);
+
+        auto gamma = makeNode("gamma");
         gamma->setChild(ystar);
         ystar->setSibling(lambda);
-        
-        result = new_eq;
+
+        auto newEq = makeNode("=");
+        newEq->setChild(X);
+        X->setSibling(gamma);
+
+        newEq->setSibling(node->sibling);
+        return newEq;
     }
-    else if (t == "fcn_form") {
+
+    // =====================================================
+    // fcn_form
+    // =====================================================
+
+    if (t == "fcn_form") {
         auto P = node->child;
         auto V = P->sibling;
-        
-        auto new_eq = makeNode("=");
-        new_eq->setChild(P);
-        
-        vector<shared_ptr<TreeNode>> vars;
-        auto curr_V = V;
-        while (curr_V->sibling) {
-            auto next = curr_V->sibling;
-            curr_V->setSibling(nullptr);
-            vars.push_back(curr_V);
-            curr_V = next;
-        }
-        auto E = curr_V;
-        
-        auto current_body = E;
-        for (int i = (int)vars.size() - 1; i >= 0; --i) {
-            current_body = createLambda(vars[i], current_body);
-        }
-        
-        P->setSibling(current_body);
-        result = new_eq;
+
+        auto vars = detachSiblings(V);
+
+        auto E = vars.back();
+        vars.pop_back();
+
+        auto currentBody = E;
+
+        for (int i = (int)vars.size() - 1; i >= 0; --i)
+            currentBody = createLambda(vars[i], currentBody);
+
+        auto newEq = makeNode("=");
+        newEq->setChild(P);
+        P->setSibling(currentBody);
+
+        newEq->setSibling(node->sibling);
+        return newEq;
     }
-    else if (t == "@") {
-        auto E1 = node->child;
-        auto N = E1->sibling;
-        auto E2 = N->sibling;
-        
-        E1->setSibling(nullptr);
-        N->setSibling(nullptr);
-        E2->setSibling(nullptr);
-        
-        auto gamma1 = makeNode("gamma");
-        auto gamma2 = makeNode("gamma");
-        
-        gamma1->setChild(gamma2);
-        gamma2->setSibling(E2);
-        
-        gamma2->setChild(N);
-        N->setSibling(E1);
-        
-        result = gamma1;
-    }
-    else if (t == "and") {
-        auto new_eq = makeNode("=");
+
+    // =====================================================
+    // and
+    // =====================================================
+
+    if (t == "and") {
         auto comma = makeNode(",");
         auto tau = makeNode("tau");
-        
-        new_eq->setChild(comma);
+
+        auto newEq = makeNode("=");
+        newEq->setChild(comma);
         comma->setSibling(tau);
-        
+
         auto eq = node->child;
-        shared_ptr<TreeNode> first_X = nullptr, last_X = nullptr;
-        shared_ptr<TreeNode> first_E = nullptr, last_E = nullptr;
-        
+
+        shared_ptr<TreeNode> firstX = nullptr;
+        shared_ptr<TreeNode> lastX = nullptr;
+
+        shared_ptr<TreeNode> firstE = nullptr;
+        shared_ptr<TreeNode> lastE = nullptr;
+
         while (eq) {
             auto X = eq->child;
             auto E = X->sibling;
-            
+
             X->setSibling(nullptr);
             E->setSibling(nullptr);
-            
-            if (!first_X) {
-                first_X = X; last_X = X;
-                first_E = E; last_E = E;
-            } else {
-                last_X->setSibling(X); last_X = X;
-                last_E->setSibling(E); last_E = E;
+
+            if (!firstX) {
+                firstX = lastX = X;
+                firstE = lastE = E;
             }
+            else {
+                lastX->setSibling(X);
+                lastX = X;
+
+                lastE->setSibling(E);
+                lastE = E;
+            }
+
             eq = eq->sibling;
         }
-        
-        comma->setChild(first_X);
-        tau->setChild(first_E);
-        
-        result = new_eq;
+
+        comma->setChild(firstX);
+        tau->setChild(firstE);
+
+        newEq->setSibling(node->sibling);
+        return newEq;
     }
-    else if (t == "@") {
+
+    // =====================================================
+    // @
+    // =====================================================
+
+    if (t == "@") {
         auto E1 = node->child;
         auto N = E1->sibling;
         auto E2 = N->sibling;
-        
-        auto gamma1 = makeNode("gamma");
-        auto gamma2 = makeNode("gamma");
-        
-        gamma1->setChild(gamma2);
-        gamma2->setSibling(E2);
-        gamma2->setChild(N);
-        N->setSibling(E1);
-        
+
         E1->setSibling(nullptr);
+        N->setSibling(nullptr);
         E2->setSibling(nullptr);
-        
-        result = gamma1;
-    }
-    else if (t == "->") {
-        auto B = node->child;
-        auto T = B->sibling;
-        auto E = T->sibling;
-        
-        auto gamma1 = makeNode("gamma");
-        auto gamma2 = makeNode("gamma");
-        auto gamma3 = makeNode("gamma");
-        auto cond = makeNode("<IDENTIFIER>", "Cond");
-        auto lambda1 = makeNode("lambda");
-        auto dummy1 = makeNode("()");
-        auto lambda2 = makeNode("lambda");
-        auto dummy2 = makeNode("()");
-        
-        gamma1->setChild(gamma2);
-        gamma2->setSibling(lambda2);
-        gamma2->setChild(gamma3);
-        gamma3->setSibling(lambda1);
-        gamma3->setChild(cond);
-        cond->setSibling(B);
-        B->setSibling(nullptr);
-        
-        lambda1->setChild(dummy1);
-        dummy1->setSibling(T);
-        T->setSibling(nullptr);
-        
-        lambda2->setChild(dummy2);
-        dummy2->setSibling(E);
-        E->setSibling(nullptr);
-        
-        result = gamma1;
-    }
-    else if (t == "tau") {
-        vector<shared_ptr<TreeNode>> children;
-        auto c = node->child;
-        while (c) {
-            auto next = c->sibling;
-            c->setSibling(nullptr);
-            children.push_back(c);
-            c = next;
-        }
-        
-        auto res = makeNode("nil");
-        for (size_t i = 0; i < children.size(); ++i) {
-            auto gamma1 = makeNode("gamma");
-            auto gamma2 = makeNode("gamma");
-            auto aug = makeNode("<IDENTIFIER>", "aug");
-            
-            gamma1->setChild(gamma2);
-            gamma2->setSibling(children[i]);
-            gamma2->setChild(aug);
-            aug->setSibling(res);
-            
-            res = gamma1;
-        }
-        result = res;
+
+        auto gamma2 = makeGamma(N, E1);
+        auto gamma1 = makeGamma(gamma2, E2);
+
+        gamma1->setSibling(node->sibling);
+        return gamma1;
     }
 
-    else if (t == "lambda") {
-        auto child1 = node->child;
-        if (!child1) return node;
+    // =====================================================
+    // lambda
+    // =====================================================
 
-        if (child1->type == ",") {
-            auto E = child1->sibling;
-            child1->setSibling(nullptr);
-            result = createLambda(child1, E);
-        } 
-        else if (child1->sibling && child1->sibling->sibling) {
-            vector<shared_ptr<TreeNode>> vars;
-            auto curr_V = child1;
-            while (curr_V->sibling) {
-                auto next = curr_V->sibling;
-                curr_V->setSibling(nullptr);
-                vars.push_back(curr_V);
-                curr_V = next;
-            }
-            auto E = curr_V;
-            
-            auto current_body = E;
-            for (int i = (int)vars.size() - 1; i >= 0; --i) {
-                current_body = createLambda(vars[i], current_body);
-            }
-            result = current_body;
+    if (t == "lambda") {
+        auto first = node->child;
+
+        if (!first)
+            return node;
+
+        // tuple lambda
+        if (first->type == ",") {
+            auto E = first->sibling;
+            first->setSibling(nullptr);
+
+            auto result = createLambda(first, E);
+            result->setSibling(node->sibling);
+
+            return result;
+        }
+
+        // multiple variables
+        if (first->sibling && first->sibling->sibling) {
+            auto vars = detachSiblings(first);
+
+            auto E = vars.back();
+            vars.pop_back();
+
+            auto currentBody = E;
+
+            for (int i = (int)vars.size() - 1; i >= 0; --i)
+                currentBody = createLambda(vars[i], currentBody);
+
+            currentBody->setSibling(node->sibling);
+            return currentBody;
         }
     }
 
-    if (result != node) {
-        result->setSibling(node->sibling);
-    }
-
-    return result;
+    return node;
 }
