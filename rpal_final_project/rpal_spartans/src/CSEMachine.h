@@ -7,68 +7,89 @@
 #include <memory>
 #include <map>
 #include <iostream>
+#include <set>
+
+using namespace std;
+
 
 enum class ItemType {
     INTEGER, STRING, TRUTH_VALUE, DUMMY, NIL,
-    IDENTIFIER, OPERATOR, 
+    IDENTIFIER, OPERATOR,
     LAMBDA, GAMMA, ENV_MARKER, CLOSURE, ETA_CLOSURE,
     TUPLE, PRIMITIVE_FUNC
 };
 
-class Environment;
-class CSEItem;
-
-class CSEItem {
-public:
-    ItemType type;
-    std::string value;
-    int delta_index;
-    std::shared_ptr<Environment> env_ptr;
-    std::string bound_var;
-    std::vector<std::string> bound_vars; // For multiple vars in tuple
-    std::vector<std::shared_ptr<CSEItem>> tuple_items;
-    std::shared_ptr<Environment> previous_env; // For env_marker to restore the caller's environment
-    std::shared_ptr<CSEItem> closure_ptr; // For eta-closure
-
-    CSEItem(ItemType t, std::string v = "") : type(t), value(v), delta_index(-1), env_ptr(nullptr) {}
-};
 
 class Environment {
 public:
     int id;
-    std::shared_ptr<Environment> parent;
-    std::map<std::string, std::shared_ptr<CSEItem>> bindings;
+    shared_ptr<Environment> parent;
+    map<string, shared_ptr<class CSEItem>> bindings;
 
-    Environment(int env_id, std::shared_ptr<Environment> p) : id(env_id), parent(p) {}
-    
-    std::shared_ptr<CSEItem> lookup(const std::string& name) {
-        if (bindings.find(name) != bindings.end()) return bindings[name];
-        if (parent) return parent->lookup(name);
-        return nullptr; // not found
+    Environment(int env_id, shared_ptr<Environment> p)
+        : id(env_id), parent(p) {}
+
+    shared_ptr<class CSEItem> lookup(const string& name) {
+        if (bindings.find(name) != bindings.end())
+            return bindings[name];
+        if (parent)
+            return parent->lookup(name);
+        return nullptr;
     }
 };
 
+
+class CSEItem {
+public:
+    ItemType type;
+    string value;
+
+    int delta_index = -1;
+
+    shared_ptr<Environment> env_ptr;
+    string bound_var;
+    vector<string> bound_vars;
+
+    vector<shared_ptr<CSEItem>> tuple_items;
+
+    shared_ptr<Environment> previous_env;
+    shared_ptr<CSEItem> closure_ptr;
+
+    CSEItem(ItemType t, string v = "")
+        : type(t), value(v) {}
+};
+
+
 class CSEMachine {
 private:
-    std::vector<std::vector<std::shared_ptr<CSEItem>>> deltas;
-    std::vector<std::shared_ptr<CSEItem>> control;
-    std::vector<std::shared_ptr<CSEItem>> stack;
-    std::shared_ptr<Environment> current_env;
-    std::shared_ptr<Environment> PE;
+    vector<vector<shared_ptr<CSEItem>>> deltas;
+    vector<shared_ptr<CSEItem>> control;
+    vector<shared_ptr<CSEItem>> stack;
+
+    shared_ptr<Environment> current_env;
+    shared_ptr<Environment> PE;
     int env_counter;
 
-    void flatten(std::shared_ptr<TreeNode> node, int current_delta_index);
-    std::shared_ptr<CSEItem> createItemFromNode(std::shared_ptr<TreeNode> node);
-    
-    void applyPrimitive(const std::string& func_name);
-    void applyBinaryOp(const std::string& op);
-    void applyUnaryOp(const std::string& op);
-    std::string escapeString(const std::string& s);
-    void printItem(std::shared_ptr<CSEItem> item, bool is_conc = false);
+ 
+    void flatten(shared_ptr<TreeNode> node, int current_delta_index);
+    shared_ptr<CSEItem> createItemFromNode(shared_ptr<TreeNode> node);
+
+    void applyPrimitive(const string& func_name);
+    void applyBinaryOp(const string& op);
+    void applyUnaryOp(const string& op);
+
+    string escapeString(const string& s);
+    void printItem(shared_ptr<CSEItem> item, bool is_conc = false);
+
+   
+    shared_ptr<CSEItem> popStack();
+    void pushStack(shared_ptr<CSEItem> item);
+    void pushDelta(int deltaIndex);
+    bool isPrimitiveFunction(const string& name);
 
 public:
-    CSEMachine(std::shared_ptr<TreeNode> root);
+    CSEMachine(shared_ptr<TreeNode> root);
     void evaluate();
 };
 
-#endif // CSEMACHINE_H
+#endif 
