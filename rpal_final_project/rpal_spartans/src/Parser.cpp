@@ -76,10 +76,16 @@ shared_ptr<TreeNode> Parser::parse() {
 void Parser::printAST(shared_ptr<TreeNode> node, int depth) {
     if (!node) return;
     for (int i = 0; i < depth; i++) cout << ".";
-    cout << node->type;
-    if (node->type == "<IDENTIFIER>" || node->type == "<INTEGER>" || node->type == "<STRING>") {
-        cout << ":" << node->value;
-    }
+
+    if (node->type == "<IDENTIFIER>")
+        cout << "<ID:" << node->value << ">";
+    else if (node->type == "<INTEGER>")
+        cout << "<INT:" << node->value << ">";
+    else if (node->type == "<STRING>")
+        cout << "<STR:" << node->value << ">";
+    else
+        cout << node->type;
+
     cout << endl;
     printAST(node->child, depth + 1);
     printAST(node->sibling, depth);
@@ -128,8 +134,8 @@ void Parser::Ew() {
 	   -> Ta ;
 */
 void Parser::T() {
-    Ta();
     int n = 0;
+    Ta();
     while (currentToken.value == ",") {
         read(",");
         Ta();

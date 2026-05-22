@@ -4,25 +4,31 @@
 #include <iostream>
 #include <cstring>
 
+using namespace std;
+
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: ./rpal20 [-ast] <filename>\n";
+        cerr << "Usage: ./rpal20 [-ast|-st] <filename>\n";
         return 1;
     }
 
     bool printAST = false;
-    std::string filename;
+    bool printStandardized = false;
+    
+    string filename;
 
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-ast") == 0) {
+        if (strcmp(argv[i], "-ast") == 0) {
             printAST = true;
+        } else if (strcmp(argv[i], "-st") == 0) {
+            printStandardized = true;
         } else {
             filename = argv[i];
         }
     }
 
     if (filename.empty()) {
-        std::cerr << "Error: No input file specified.\n";
+        cerr << "Error: No input file specified.\n";
         return 1;
     }
     
@@ -31,22 +37,22 @@ int main(int argc, char** argv) {
         auto ast = parser.parse();
         
         if (printAST) {
-            std::cout << "Original AST:\n";
             parser.printAST(ast);
+            return 0;
         }
         
         Standardizer st;
         auto standardizedTree = st.standardize(ast);
         
-        if (printAST) {
-            std::cout << "\nStandardized AST:\n";
+        if (printStandardized) {
             parser.printAST(standardizedTree);
         } else {
             CSEMachine machine(standardizedTree);
             machine.evaluate();
         }
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
         return 1;
     }
 
