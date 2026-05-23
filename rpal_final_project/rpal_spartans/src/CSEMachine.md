@@ -1,83 +1,89 @@
 # Control Stack Evaluator (CSE) Machine
 
-The CSE Machine is the execution engine of the interpreter. It is a state machine that evaluates the standardized syntax tree by manipulating a **Control Stack**, a **Value Stack**, and a tree of **Environments**.
+This document describes the runtime model implemented in `src/CSEMachine.cpp/.h`. The CSE Machine evaluates the standardized AST by operating on:
+
+- a `control` list (instructions),
+- a `stack` (values/closures), and
+- a tree of lexical `Environment` objects.
 
 ## Files
-- `src/CSEMachine.h`: Defines the `CSEItem`, `Environment`, and `CSEMachine` class structures.
-- `src/CSEMachine.cpp`: Implements the evaluation loop, environment bindings, primitive function application, and binary/unary operators.
 
-## Machine Architecture
+- `src/CSEMachine.h` — type definitions: `ItemType`, `Environment`, `CSEItem`, and `CSEMachine` API.
+- `src/CSEMachine.cpp` — implementation: AST flattening into `deltas`, the main evaluation loop, and primitive operators.
 
-### 1. Control Stack (`control`)
-Contains instructions to be evaluated. It is initialized by flattening the standardized AST. During evaluation, instructions are popped off the Control Stack.
-- High-level nodes (like lambda closures and conditionals) push new blocks of instructions (Deltas) onto the Control Stack.
+## Core Data Structures
 
-### 2. Value Stack (`stack`)
-Contains temporary results, closures, primitive functions, environments, and evaluated values (integers, strings, truth values, tuples).
+- `ItemType` — enum of runtime kinds: `INTEGER`, `STRING`, `TRUTH_VALUE`, `DUMMY`, `NIL`, `IDENTIFIER`, `OPERATOR`, `LAMBDA`, `GAMMA`, `ENV_MARKER`, `CLOSURE`, `ETA_CLOSURE`, `TUPLE`, `PRIMITIVE_FUNC`.
 
-### 3. Environment Tree
-Maintains the bindings of identifiers to values.
-- `E0` is the global environment containing built-in primitives.
-- When a user-defined function (closure) is applied, a new environment `Ei` is created. Its parent pointer links back to the environment where the closure was *defined* (lexical scoping).
+- `Environment` — tree node with `id`, `parent`, and `bindings` mapping names to `CSEItem` values. `lookup(name)` climbs parents to find a binding.
 
----
+- `CSEItem` — runtime value wrapper with fields used by different `ItemType`s:
+  - `type`, `value` (string),
+  - `delta_index` (for lambdas/closures),
+  - `env_ptr` / `previous_env` / `closure_ptr` (env/closure links),
+  - `bound_var` / `bound_vars` (parameter names),
+  - `tuple_items` (for constructed tuples).
 
-## Execution Mechanics
+## Compilation: flatten() & Deltas
 
-### 1. AST Flattening
-The tree is flattened into a collection of sequential blocks called **Deltas** (`deltas[i]`).
-- `Delta 0` represents the root expression.
-- Every `lambda` node creates a new child Delta containing the instructions representing the function body.
-- The tree-walking method `flatten()` traverses the tree and populates `deltas`, inserting `LAMBDA` markers that reference their respective Delta indices.
+- The Standardized AST is flattened into a vector of instruction blocks called `deltas`.
+  - `deltas[0]` is the top-level delta.
+  - Each `lambda` node creates a new delta index for the function body; the `LAMBDA`-style `CSEItem` records that `delta_index` and parameter names.
 
-### 2. The Main Evaluation Loop
-The loop runs until the `control` stack is empty:
-- **Value Push**: Constants like `INTEGER`, `STRING`, `TRUTH_VALUE`, `DUMMY`, `NIL` are pushed directly to the Value Stack.
-- **Identifier Lookup**: Identifiers are resolved by searching the current environment `current_env` and climbing up parent environments until found.
-- **LAMBDA**: Creates a `CLOSURE` containing the bound variable(s), the body's Delta index, and a pointer to `current_env` (the definition environment).
-- **GAMMA (Application)**: Applies the operator on the top of the stack (`rator`) to the operand (`rand`).
-  - **Closure Application**: Creates a new environment `En`, binds the parameters, sets `current_env` to `En`, and pushes the body's Delta onto the control stack along with an `ENV_MARKER` to restore the previous environment.
-  - **Primitive Application**: Executes built-in functions directly.
-  - **Tuple Selection**: If `rator` is a tuple and `rand` is an integer, it extracts the `rand`-th item (1-indexed) from the tuple.
-- **Environment Marker (`ENV_MARKER`)**: Restores `current_env` to the caller's environment.
-- **Beta / Conditionals**: If a conditional branch (`beta`) is encountered, it evaluates the boolean test on the stack and pushes the instructions from either the `then` or `else` Delta.
+- `flatten(node, idx)` walks the tree post-order and appends `CSEItem`s into `deltas[idx]`. Special nodes handled during flattening include:
+  - `lambda` — allocates a new delta and emits a `LAMBDA` item that records parameter(s) and the new delta index.
+  - `->` (conditional) — flattens the boolean test in the current delta and creates two new deltas for `then` and `else`, emitting an `OPERATOR` `beta` that stores those delta indices.
+  - Other nodes are converted to `CSEItem`s via `createItemFromNode()` (identifiers, constants, operators, `tau`, `Ystar`, etc.).
 
----
+## Machine: startup state
 
-## Primitive Operators Supported
+- The machine constructs a global environment `PE` (id 0) and sets `current_env = PE`.
+- `deltas` is built by `flatten(root, 0)`.
+- An `ENV_MARKER` for `PE` is created and pushed to `control` and `stack` to seed evaluation.
 
-| Primitive | Action |
-|---|---|
-| `Print` | Prints the value representation to stdout (with string escape characters handled). |
-| `Stem` | Returns the first character of a string. |
-| `Stern` | Returns the string excluding the first character. |
-| `Conc` | Concatenates two strings, or concatenates the elements of a tuple into a single string. |
-| `Order` | Returns the number of items in a tuple. |
-| `Null` | Returns `true` if the operand is `nil` or an empty tuple. |
-| `Isinteger` / `Isstring` / `Istuple` / `Istruthvalue` / `Isfunction` | Dynamic type-assertion checks. |
-| `ItoS` | Converts an integer value to a string value. |
-| `Cond` | Evaluates conditional logic. |
-| `aug` | Appends a value to a tuple (or creates a tuple if appended to `nil`). |
-| `Ystar` | Evaluates fixed-point Combinator for recursion. |
+## Evaluation loop (summary)
 
----
+- Loop until `control` is empty; pop the next `item` from `control` and act based on `item->type`.
 
-## Critical Bug Fixes and Details
+- Value-like items (INTEGER, STRING, TRUTH_VALUE, DUMMY, NIL, CLOSURE, PRIMITIVE_FUNC, ETA_CLOSURE, and materialized TUPLE values) are pushed onto the `stack`.
 
-### 1. `aug` Tuple Construction Semantics
-The primitive operator `aug` acts to append an element to a tuple. During testing, recursive list manipulations like `pairs1` would result in a stack underflow. This was because if `rand2` was a tuple, `aug` was unrolling the tuple items instead of keeping the tuple intact and appending the item:
-- **Fixed**: `aug` now correctly checks the type and adds the element directly to the end of the tuple structure without destructive unrolling.
+- `IDENTIFIER` — resolved via `current_env->lookup(name)`; if not found and the name is `Print` it is treated as a primitive; otherwise an error is raised.
 
-### 2. `tau` Standardization Conflict
-The `tau` operator collects a defined number of stack values into a single tuple.
-- **Problem**: When a standardized tree contained `tau` nodes (e.g., from simultaneous definitions), the machine would either crash or skip evaluation.
-- **Fixed**: We added `tau` instruction mapping during compilation and updated the evaluation loop to intercept `tau`, pop exactly `n` arguments from the value stack, construct a `TUPLE` node, and push it back.
+- `LAMBDA` — converted to a `CLOSURE` when encountered at runtime: a closure stores `delta_index`, binding names, and a pointer to the `current_env` (lexical environment).
 
-### 3. `Conc` Tuple and String Semantics
-The `Conc` operator has dual behaviors depending on standard currying vs tuple application.
-- **Problem**: Running `conc.1` produced no output due to mismatched concatenation types.
-- **Fixed**: Updated `Conc` to check if its argument is a tuple. If it is a tuple, it performs a full string concatenation of all string elements within that tuple. If it is a single string, it returns a partially-applied `Conc1` operator awaiting the second operand.
+- `GAMMA` (application) — pops `rand` (argument) and `rator` (function/operator) from the `stack` and dispatches:
+  - `CLOSURE`: create a new `Environment` with parent = closure's `env_ptr`; bind parameters (either `bound_vars` tuple extraction or single `bound_var`) to `rand`/tuple items; push an `ENV_MARKER` (stores previous env), set `current_env` to the new env, and push the closure body delta items onto `control`.
+  - `PRIMITIVE_FUNC`: if `Ystar`, create an `ETA_CLOSURE` wrapping `rand`; otherwise push `rand` back and call `applyPrimitive(name)` to handle the primitive.
+  - `ETA_CLOSURE`: supports the `Ystar` behavior by arranging two `GAMMA` items and re-pushing the closure and the `eta` wrapper to trigger self-application.
 
-### 4. Environment Formatting vs. Delta Indexes
-- **Problem**: When printing closures, the expected output was `[lambda closure: x: 2]` but the interpreter output `[lambda closure: x: 0]`.
-- **Fixed**: Discovered that the reference interpreter tracks the **Delta Index** (representing the static scope body) of the lambda in its print representation, not the runtime environment ID. Updating the print output format resolved the discrepancy.
+- `ENV_MARKER` — restores `current_env` from the marker's `previous_env`; the top-of-stack result is kept and the marker is removed.
+
+- `TUPLE` with value `tau` — when a `tau` operator item is executed, it reads `n` from the item, pops `n` values from `stack`, and constructs a `TUPLE` `CSEItem` with `tuple_items` filled.
+
+- `OPERATOR` — operators are dispatched:
+  - `beta` — conditional: pop boolean result, determine index using stored `bound_vars` (the two delta indices), and push the selected delta's items into `control`.
+  - `neg` / `not` — handled as unary operators via `applyUnaryOp`.
+  - other operator names — handled as binary ops via `applyBinaryOp`.
+
+## Primitive functions (implemented / recognized)
+
+The implementation recognizes a set of primitive names (see `createItemFromNode`):
+
+- `Print` — prints a single value using `printItem()` and pushes a `DUMMY` result.
+- `Stern`, `Stem`, `Conc`, `Order`, `Null`, `Isinteger`, `Isstring`, `Istuple`, `Istruthvalue`, `Isfunction`, `ItoS`, `Cond`, `aug`, `Ystar` — recognized as `PRIMITIVE_FUNC` items when encountered as identifiers during flattening.
+
+Note: The present `CSEMachine.cpp` only implements `Print`, `+` (in `applyBinaryOp`) and `not`/`neg` (in `applyUnaryOp`) concretely; other primitives are recognized and would be dispatched via `applyPrimitive` or future implementations.
+
+## Error handling and special cases
+
+- Identifier lookup throws `runtime_error("Undeclared identifier: " + name)` when a non-primitive identifier is not found in the environment chain.
+- The machine checks for stack underflow conditions (e.g., in `GAMMA`) and throws descriptive errors.
+
+## Where to look in code
+
+- Delta construction and initial state: `CSEMachine::CSEMachine(shared_ptr<TreeNode> root)` in `src/CSEMachine.cpp`.
+- Runtime loop: `CSEMachine::evaluate()` in `src/CSEMachine.cpp`.
+- Node → item mapping: `CSEMachine::createItemFromNode(shared_ptr<TreeNode>)`.
+- Primitive and operator dispatch: `applyPrimitive`, `applyBinaryOp`, `applyUnaryOp`.
+
+For implementation details and to see exactly which primitives are active or partially implemented, inspect [src/CSEMachine.cpp](src/CSEMachine.cpp) and [src/CSEMachine.h](src/CSEMachine.h).
